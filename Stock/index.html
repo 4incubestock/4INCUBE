@@ -396,6 +396,7 @@ function openMove(code){
   +'<div class="err" id="merr"></div><div class="foot"><button class="btn ghost" type="button" id="mcancel">취소</button><button class="btn accent" type="button" id="msave">저장</button></div>');
   var type="입고";
   $$("#mtype button",ov).forEach(function(b){ b.onclick=function(){ type=b.dataset.t; $$("#mtype button",ov).forEach(function(x){x.classList.toggle("on",x===b)}); $("#qlabel",ov).textContent=type==="조정"?"최종 수량":type+" 수량"; $("#costF",ov).style.display=type==="입고"?"":"none"; if(type==="조정") $("#mq",ov).value=it.qty; else $("#mq",ov).value=1; }; });
+  $$("#mtype button",ov)[1].click();
   $("#qm",ov).onclick=function(){ var i=$("#mq",ov); i.value=Math.max(0,(parseInt(i.value,10)||0)-1); };
   $("#qp",ov).onclick=function(){ var i=$("#mq",ov); i.value=(parseInt(i.value,10)||0)+1; };
   $("#mcancel",ov).onclick=function(){ov.remove()};
