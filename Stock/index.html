@@ -42,6 +42,7 @@ a{color:inherit}
 .btn.danger{background:#fff;color:var(--bad);border:1px solid #f1c3c3}.btn.danger:hover{background:#fff4f4}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin:2px 0 14px;cursor:pointer}.remember span{color:var(--muted);font-size:12px}.remember input{width:16px;height:16px;accent-color:var(--accent)}
 .demo-note{margin-top:16px;font-size:12px;color:var(--muted);line-height:1.6;border-top:1px dashed var(--line2);padding-top:12px}
 /* ---- app shell ---- */
 #app{min-height:100dvh;display:flex;flex-direction:column}
@@ -162,14 +163,15 @@ table.t tr:hover td{background:#fcfaf6}
 <!-- ================= LOGIN ================= -->
 <div id="login">
   <form class="card" id="loginForm" autocomplete="on">
-    <div class="wm">4INCUBE<small>INVENTORY · 재고관리</small></div>
+    <div class="wm">4INCUBE<small>STOCK · 재고관리</small></div>
     <h1>로그인</h1>
     <p class="sub">지급받은 아이디와 비밀번호를 입력하세요.</p>
     <div class="field"><label>아이디</label><input id="lid" name="username" autocomplete="username" required autofocus></div>
     <div class="field"><label>비밀번호</label><input id="lpw" name="password" type="password" autocomplete="current-password" required></div>
+    <label class="remember"><input type="checkbox" id="lremember" checked> 로그인 상태 유지 <span>(이 기기에서 30일)</span></label>
     <button class="btn w" type="submit" id="loginBtn">로그인</button>
     <div class="err" id="lerr"></div>
-    <div class="demo-note hidden" id="demoNote">데모 모드입니다. API_URL이 비어 있어 브라우저 안에서만 동작하고 저장되지 않습니다.<br>테스트 계정: <b>admin / 4incube1!</b></div>
+    <div class="demo-note hidden" id="demoNote">데모 모드입니다. API_URL이 비어 있어 브라우저 안에서만 동작하고 저장되지 않습니다.<br>테스트 계정: <b>admin / planfurni1!</b></div>
   </form>
 </div>
 
@@ -214,14 +216,14 @@ var demoDB = null;
 function demoApi(p){
   if(!demoDB) demoDB = demoSeed();
   var r = (function(){
-    if(p.action==="login") return (p.id==="admin"&&p.pw==="4incube1!")||(p.id==="staff"&&p.pw==="123456") ? {ok:true,token:"demo",user:{id:p.id,name:p.id==="admin"?"관리자":"직원",role:p.id==="admin"?"admin":"staff"}} : {ok:false,message:"아이디 또는 비밀번호가 맞지 않습니다."};
+    if(p.action==="login") return (p.id==="admin"&&p.pw==="planfurni1!")||(p.id==="staff"&&p.pw==="123456") ? {ok:true,token:"demo",user:{id:p.id,name:p.id==="admin"?"관리자":"직원",role:p.id==="admin"?"admin":"staff"}} : {ok:false,message:"아이디 또는 비밀번호가 맞지 않습니다."};
     if(p.action==="getAll") return {ok:true,colors:Object.keys(COLOR_HEX),items:JSON.parse(JSON.stringify(demoDB.items)),log:demoDB.log.slice().reverse(),updatedAt:new Date().toISOString()};
     if(p.action==="move"){ var it=demoDB.items.find(function(x){return x.code===p.code}); if(!it) return {ok:false,message:"품목 없음"}; var b=it.qty,a=p.type==="입고"?b+Math.abs(p.qty):p.type==="출고"?b-Math.abs(p.qty):p.qty; if(a<0) return {ok:false,message:"재고가 부족합니다 (현재 "+b+")."}; it.qty=a; if(p.type==="입고"&&p.cost!==""&&p.cost!=null) it.cost=Number(p.cost); demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:it.code,type:p.type,before:b,after:a,delta:a-b,cost:p.cost||"",amount:p.cost?Math.abs(a-b)*p.cost:"",note:p.note||""}); return {ok:true,qty:a}; }
     if(p.action==="upsertItem"){ var d=p.item, ex=demoDB.items.find(function(x){return x.code===d.code}); if(ex) Object.assign(ex,d,{qty:ex.qty}); else demoDB.items.push(Object.assign({qty:0},d)); return {ok:true}; }
     if(p.action==="listUsers") return {ok:true,users:demoDB.users};
     if(p.action==="addUser"){ if(demoDB.users.some(function(u){return u.id===p.id})) return {ok:false,message:"이미 있는 아이디입니다."}; demoDB.users.push({id:p.id,name:p.name||p.id,role:p.role,since:new Date().toISOString().slice(0,10)}); return {ok:true}; }
     if(p.action==="removeUser"){ demoDB.users=demoDB.users.filter(function(u){return u.id!==p.id}); return {ok:true}; }
-    if(p.action==="resetPw"||p.action==="changePw") return {ok:true};
+    if(p.action==="resetPw"||p.action==="changePw"||p.action==="logout") return {ok:true};
     return {ok:false,message:"bad action"};
   })();
   return new Promise(function(res){ setTimeout(function(){res(r)},120); });
@@ -250,10 +252,17 @@ function products(){ var m={}; fgItems().forEach(function(i){ var k=i.no; if(!m[
 /* ============================ 로그인 ============================ */
 $("#loginForm").addEventListener("submit",function(e){
   e.preventDefault(); var b=$("#loginBtn"); b.disabled=true; $("#lerr").textContent="";
-  api({action:"login",id:$("#lid").value.trim(),pw:$("#lpw").value}).then(function(r){
+  var remember=$("#lremember").checked, id=$("#lid").value.trim();
+  api({action:"login",id:id,pw:$("#lpw").value,remember:remember}).then(function(r){
     b.disabled=false;
     if(!r.ok){ $("#lerr").textContent=r.message||"로그인 실패"; return; }
-    S.token=r.token; S.user=r.user; try{ sessionStorage.setItem("pf_tok",r.token); sessionStorage.setItem("pf_user",JSON.stringify(r.user)); }catch(x){}
+    S.token=r.token; S.user=r.user;
+    try{
+      var store=remember?localStorage:sessionStorage;            // 유지 체크 시 localStorage(30일), 아니면 탭 닫으면 끝
+      store.setItem("pf_tok",r.token); store.setItem("pf_user",JSON.stringify(r.user));
+      (remember?sessionStorage:localStorage).removeItem("pf_tok"); (remember?sessionStorage:localStorage).removeItem("pf_user");
+      localStorage.setItem("pf_last_id",id);                       // 아이디는 항상 기억
+    }catch(x){}
     enterApp();
   });
 });
@@ -264,7 +273,7 @@ function enterApp(){
   $("#demoBadge").classList.toggle("hidden",!DEMO);
   load();
 }
-function logout(){ S.token=null; S.user=null; try{sessionStorage.clear()}catch(x){} $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); $("#lpw").value=""; }
+function logout(){ var t=S.token; S.token=null; S.user=null; if(t) api({action:"logout",token:t}); try{ ["pf_tok","pf_user"].forEach(function(k){ sessionStorage.removeItem(k); localStorage.removeItem(k); }); }catch(x){} $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); $("#lpw").value=""; }
 function load(){
   loading(true);
   return api({action:"getAll"}).then(function(r){
@@ -353,7 +362,7 @@ function loadUsers(){
     tb.innerHTML=r.users.map(function(u){ return '<tr><td><b>'+esc(u.id)+'</b></td><td>'+esc(u.name)+'</td><td><span class="tag '+(u.role==="admin"?"admin":"")+'">'+(u.role==="admin"?"관리자":"직원")+'</span></td><td>'+esc(u.since||"")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-resetpw="'+esc(u.id)+'">비밀번호 재설정</button> '+(u.id!==S.user.id?'<button class="btn danger sm" data-deluser="'+esc(u.id)+'">삭제</button>':'')+'</td></tr>'; }).join(""); bind(); });
 }
 function viewMe(){
-  return '<div class="sec-h"><div><div class="eyebrow">ACCOUNT</div><h2>내 계정</h2></div></div><div class="grid2"><div class="panel"><h3>비밀번호 변경</h3><form id="pwForm"><div class="field"><label>현재 비밀번호</label><input type="password" id="pw0" autocomplete="current-password" required></div><div class="field"><label>새 비밀번호 (6자 이상)</label><input type="password" id="pw1" autocomplete="new-password" minlength="6" required></div><div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw2" autocomplete="new-password" required></div><button class="btn" type="submit">변경</button></form></div><div class="panel"><h3>로그인 정보</h3><p style="margin-bottom:6px"><b>'+esc(S.user.name||S.user.id)+'</b> ('+esc(S.user.id)+') · '+(S.user.role==="admin"?"관리자":"직원")+'</p><p class="note">세션은 12시간 뒤 자동으로 만료됩니다.</p><div style="margin-top:16px"><button class="btn ghost" id="logoutBtn">로그아웃</button></div></div></div>';
+  return '<div class="sec-h"><div><div class="eyebrow">ACCOUNT</div><h2>내 계정</h2></div></div><div class="grid2"><div class="panel"><h3>비밀번호 변경</h3><form id="pwForm"><div class="field"><label>현재 비밀번호</label><input type="password" id="pw0" autocomplete="current-password" required></div><div class="field"><label>새 비밀번호 (6자 이상)</label><input type="password" id="pw1" autocomplete="new-password" minlength="6" required></div><div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw2" autocomplete="new-password" required></div><button class="btn" type="submit">변경</button></form></div><div class="panel"><h3>로그인 정보</h3><p style="margin-bottom:6px"><b>'+esc(S.user.name||S.user.id)+'</b> ('+esc(S.user.id)+') · '+(S.user.role==="admin"?"관리자":"직원")+'</p><p class="note">"로그인 상태 유지"로 들어오면 이 기기에서 30일, 아니면 12시간 뒤 자동 만료됩니다. 비밀번호를 바꾸면 다른 기기의 로그인은 모두 풀립니다.</p><div style="margin-top:16px"><button class="btn ghost" id="logoutBtn">로그아웃</button></div></div></div>';
 }
 
 /* ============================ 이벤트 ============================ */
@@ -432,13 +441,17 @@ function exportCsv(){
   var byCode={}; S.items.forEach(function(i){byCode[i.code]=i});
   var lines=[["일시","담당","코드","품목","색상","유형","변경전","변경후","증감","단가","금액","메모"]].concat(S.log.map(function(r){ var it=byCode[r.code]||{}; return [dt(r.at),r.by,r.code,it.name||"",it.color||"",r.type,r.before,r.after,r.delta,r.cost,r.amount,r.note||""]; }));
   var csv="﻿"+lines.map(function(l){return l.map(function(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}).join(",")}).join("\n");
-  var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="4INCUBE_inventory_log_"+new Date().toISOString().slice(0,10)+".csv"; a.click();
+  var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="4incube_stock_log_"+new Date().toISOString().slice(0,10)+".csv"; a.click();
 }
 
 /* ============================ 시작 ============================ */
 (function init(){
   if(DEMO) $("#demoNote").classList.remove("hidden");
-  try{ var t=sessionStorage.getItem("pf_tok"), u=sessionStorage.getItem("pf_user"); if(t&&u){ S.token=t; S.user=JSON.parse(u); enterApp(); } }catch(x){}
+  try{
+    var last=localStorage.getItem("pf_last_id"); if(last){ $("#lid").value=last; $("#lpw").focus(); }
+    var t=localStorage.getItem("pf_tok")||sessionStorage.getItem("pf_tok"), u=localStorage.getItem("pf_user")||sessionStorage.getItem("pf_user");
+    if(t&&u){ S.token=t; S.user=JSON.parse(u); enterApp(); }
+  }catch(x){}
 })();
 </script>
 </body>
