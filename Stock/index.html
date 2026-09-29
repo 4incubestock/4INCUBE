@@ -12,7 +12,7 @@
    설정 — Apps Script 배포 후 받은 "웹 앱 URL" 을 아래 따옴표 안에 붙여넣으세요.
    비워 두면 데모 모드(브라우저 안에서만 동작, 저장 안 됨)로 열립니다.
    ============================================================ */
-var API_URL = "https://script.google.com/macros/s/AKfycbwaThBrX5BR_Ir4sM4g5VSTwPy0tPH-y-8i_aJFzrNZs8Z-HBSqWC4G_Uxz93gOMfYLGw/exec";
+var API_URL = "https://script.google.com/macros/s/AKfycbx3FALIxxcoM8rb424w_8aVXMpcS6cpevO-aMzy9uywwkhnsO6mPhoBtQo62sLHJmfiuA/exec";
 </script>
 <style>
 :root{--bg:#f4f2ee;--surface:#fff;--surface2:#faf8f4;--line:#e6e0d6;--line2:#d9d3c8;--ink:#1b1a18;--ink2:#3f3b35;--muted:#8a8378;--accent:#E9641C;--accent2:#f5b58e;--navy:#2B3646;--ok:#3a8f5c;--warn:#d9a31a;--bad:#d93a3a;--r:14px}
@@ -365,7 +365,10 @@ function load(){
   return api({action:"getAll"}).then(function(r){
     loading(false);
     if(!r.ok){ if(r.error==="auth"){ toast("세션이 만료되었습니다. 다시 로그인하세요.",true); logout(); } else toast(r.message||"불러오기 실패",true); return; }
-    S.colors=r.colors; S.items=r.items; S.log=r.log; S.parts=(r.parts&&r.parts.length)?r.parts.map(function(p){ if(!p.cat) p.cat=catOf(p.code); return p; }):defaultParts(); S.bom=r.bom||BOM; S.serverVer=r.version||null; render();
+    S.colors=r.colors; S.items=r.items; S.log=r.log; var legacyBom=!!(r.parts&&r.parts.some(function(p){ return /^(STAY|HPANEL|BACK-|SIDE-)/i.test(p.code); }));
+    if(r.parts&&r.parts.length&&!legacyBom){ S.parts=r.parts.map(function(p){ if(!p.cat) p.cat=catOf(p.code); return p; }); S.bom=r.bom||BOM; } else { S.parts=defaultParts(); S.bom=BOM; }
+    S.serverVer=r.version||null; render();
+    if(legacyBom) toast("서버의 BOM이 구버전이라 화면에 내장된 BOM으로 표시합니다. 새 Code.gs를 새 버전으로 배포하면 자동으로 정리됩니다.",true);
     if(!DEMO&&S.serverVer!==APP_VERSION) toast("서버(Code.gs) 버전이 "+(S.serverVer||"구버전")+"입니다. 화면은 v"+APP_VERSION+" — 배포 관리에서 새 버전으로 배포하세요.",true);
   });
 }
