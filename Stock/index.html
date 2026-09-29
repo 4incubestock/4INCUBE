@@ -12,7 +12,7 @@
    설정 — Apps Script 배포 후 받은 "웹 앱 URL" 을 아래 따옴표 안에 붙여넣으세요.
    비워 두면 데모 모드(브라우저 안에서만 동작, 저장 안 됨)로 열립니다.
    ============================================================ */
-var API_URL = "https://script.google.com/macros/s/AKfycby30abYwhrQYjmATaLxNbaX7ojVbwU_sWry7NN5L4LfXnkNDZyvJmOPLsaYeX714TJYEg/exec";
+var API_URL = "https://script.google.com/macros/s/AKfycbyVH3wh0Mwjw6rlg_sMOgEiX60qmta6bhzPBypErZgiGhlppJpA2TdaAHmYv9G8fDIt0A/exec";
 </script>
 <style>
 :root{--bg:#f4f2ee;--surface:#fff;--surface2:#faf8f4;--line:#e6e0d6;--line2:#d9d3c8;--ink:#1b1a18;--ink2:#3f3b35;--muted:#8a8378;--accent:#E9641C;--accent2:#f5b58e;--navy:#2B3646;--ok:#3a8f5c;--warn:#d9a31a;--bad:#d93a3a;--r:14px}
@@ -65,7 +65,7 @@ main{max-width:1240px;width:100%;margin:0 auto;padding:22px 20px 80px}
 .tools input,.tools select{height:36px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;background:#fff;outline:none}
 .tools input:focus,.tools select:focus{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff}
-.seg button{padding:0 12px;height:36px;color:var(--muted);font-weight:500}
+.seg button{padding:0 var(--pad,12px);height:36px;color:var(--muted);font-weight:500;white-space:nowrap}
 .seg button.on{background:var(--ink);color:#fff}
 /* ---- kpi ---- */
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
@@ -211,44 +211,41 @@ var COLOR_HEX = {"화이트":"#F1F0EB","블랙":"#131416","오렌지":"#EE6A22",
 var LOW = 1; // 이 수량 이하면 "부족"
 var COLOR_CODE = {"화이트":"WH","블랙":"BK","오렌지":"OR","노랑":"YE","스틸블루":"SB","올리브그린":"OG","분홍":"PK","베이지":"BG"};
 /* 기본 BOM (서버의 BOM 시트가 없거나 데모 모드일 때 사용). 실제 운영값은 구글 시트 "BOM" 탭에서 관리 */
-var PART_DEF = [ // 부품코드, 부품명, 규격, 색상구분(Y=제품 색상을 따르는 패널류 / N=크롬·유리·조명 공통)
-  ["DOOR-750x350", "도어", "750×350", "Y"], ["DOOR-500x350", "도어", "500×350", "Y"], ["DOOR-500x175", "도어", "500×175", "Y"],
-  ["HPANEL-750x350", "상·하판", "750×350", "Y"], ["HPANEL-500x350", "상·하판", "500×350", "Y"], ["HPANEL-750x500", "상·하판", "750×500", "Y"], ["HPANEL-500x500", "상·하판", "500×500", "Y"],
-  ["BACK-750x350", "뒷판", "750×350", "Y"], ["BACK-500x350", "뒷판", "500×350", "Y"], ["BACK-500x175", "뒷판", "500×175", "Y"],
-  ["SIDE-350x350", "측판", "350×350", "Y"], ["SIDE-175x350", "측판", "175×350", "Y"], ["SIDE-350x500", "측판", "350×500(깊이)", "Y"],
-  ["HANDLE", "핸들", "도어당 1", "Y"], ["STAY", "도어 스토퍼 암", "도어당 1", "Y"],
-  ["BALL", "볼조인트", "크롬", "N"], ["TUBE-750", "튜브", "750", "N"], ["TUBE-500", "튜브", "500", "N"], ["TUBE-350", "튜브", "350", "N"], ["TUBE-175", "튜브", "175", "N"],
-  ["FOOT", "레벨링 풋", "크롬", "N"], ["HINGE", "도어 힌지", "도어당 2", "N"], ["GLASS-750x350", "유리", "750×350", "N"], ["GLASS-350x350", "유리", "350×350", "N"], ["LED", "LED 조명", "1칸용", "N"]
+var PART_DEF = [ // 부품코드, 부품명, 규격, 색상구분(Y=제품 색상을 따름 / N=크롬·유리·조명 공통), 분류(도어/패널/악세사리)
+  ["DOOR-750x350", "도어", "750×350", "Y", "도어"], ["DOOR-500x350", "도어", "500×350", "Y", "도어"], ["DOOR-500x175", "도어", "500×175", "Y", "도어"],
+  ["PANEL-750x350", "패널", "750×350", "Y", "패널"], ["PANEL-750x500", "패널", "750×500", "Y", "패널"], ["PANEL-500x350", "패널", "500×350", "Y", "패널"], ["PANEL-500x500", "패널", "500×500", "Y", "패널"], ["PANEL-500x175", "패널", "500×175", "Y", "패널"], ["PANEL-350x350", "패널", "350×350", "Y", "패널"], ["PANEL-350x175", "패널", "350×175", "Y", "패널"], ["SIDEPANEL-350x350", "사이드패널", "350×350 (칸 사이 · 타공)", "Y", "패널"], ["SIDEPANEL-500x350", "사이드패널", "500×350 (칸 사이 · 타공)", "Y", "패널"],
+  ["HINGE", "도어 힌지", "도어당 2 (스토퍼 암 포함)", "N", "악세사리"], ["HANDLE", "핸들", "도어당 1", "Y", "악세사리"], ["BALL", "볼조인트", "크롬", "N", "악세사리"], ["TUBE-750", "튜브", "750", "N", "악세사리"], ["TUBE-500", "튜브", "500", "N", "악세사리"], ["TUBE-350", "튜브", "350", "N", "악세사리"], ["TUBE-175", "튜브", "175", "N", "악세사리"], ["FOOT", "레벨링 풋", "크롬", "N", "악세사리"], ["GLASS-750x350", "유리", "750×350", "N", "악세사리"], ["GLASS-350x350", "유리", "350×350", "N", "악세사리"], ["LED", "LED 조명", "1칸용", "N", "악세사리"]
 ];
-var BOM = { // 재고시스템 No → { 부품코드: 1대당 수량 }  (컨피규레이터 3D 모델에서 산출. 상·하판 = 상판+하판+칸 사이 수평판 합계)
-  1: {"DOOR-750x350":2, "HPANEL-750x350":6, "BACK-750x350":2, "SIDE-350x350":3, "HANDLE":2, "STAY":2, "BALL":18, "TUBE-750":12, "TUBE-350":21, "FOOT":6, "HINGE":4},
-  2: {"DOOR-750x350":2, "HPANEL-750x350":6, "BACK-750x350":2, "SIDE-350x350":3, "HANDLE":2, "STAY":2, "BALL":18, "TUBE-750":12, "TUBE-350":15, "TUBE-175":6, "FOOT":6, "HINGE":4},
-  3: {"DOOR-750x350":4, "HPANEL-750x350":8, "BACK-750x350":4, "SIDE-350x350":6, "HANDLE":4, "STAY":4, "BALL":24, "TUBE-750":16, "TUBE-350":24, "TUBE-175":6, "FOOT":6, "HINGE":8},
-  4: {"DOOR-750x350":4, "HPANEL-750x350":6, "BACK-750x350":4, "SIDE-350x350":6, "HANDLE":4, "STAY":4, "BALL":18, "TUBE-750":12, "TUBE-350":21, "FOOT":6, "HINGE":8},
-  5: {"DOOR-750x350":3, "HPANEL-750x350":9, "BACK-750x350":3, "SIDE-350x350":4, "HANDLE":3, "STAY":3, "BALL":24, "TUBE-750":18, "TUBE-350":28, "FOOT":8, "HINGE":6},
-  6: {"DOOR-750x350":3, "HPANEL-750x350":4, "BACK-750x350":3, "SIDE-350x350":6, "HANDLE":3, "STAY":3, "BALL":16, "TUBE-750":8, "TUBE-350":20, "FOOT":4, "HINGE":6},
-  7: {"DOOR-750x350":1, "HPANEL-750x350":3, "BACK-750x350":1, "SIDE-350x350":2, "HANDLE":1, "STAY":1, "BALL":12, "TUBE-750":6, "TUBE-350":14, "FOOT":4, "HINGE":2},
-  8: {"DOOR-750x350":2, "HPANEL-750x350":4, "BACK-750x350":2, "SIDE-350x350":4, "HANDLE":2, "STAY":2, "BALL":16, "TUBE-750":8, "TUBE-350":16, "TUBE-175":4, "FOOT":4, "HINGE":4},
-  9: {"DOOR-750x350":3, "HPANEL-750x350":9, "BACK-750x350":3, "SIDE-350x350":4, "HANDLE":3, "STAY":3, "BALL":24, "TUBE-750":18, "TUBE-350":20, "TUBE-175":8, "FOOT":8, "HINGE":6},
-  10: {"DOOR-750x350":3, "HPANEL-750x350":6, "BACK-750x350":3, "SIDE-350x350":4, "HANDLE":3, "STAY":3, "BALL":16, "TUBE-750":12, "TUBE-350":16, "FOOT":8, "HINGE":6},
-  11: {"DOOR-500x175":1, "HPANEL-500x350":3, "BACK-500x175":1, "SIDE-175x350":2, "HANDLE":1, "STAY":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "FOOT":4, "HINGE":2},
-  12: {"DOOR-500x350":1, "HPANEL-500x350":3, "BACK-500x350":1, "SIDE-350x350":2, "HANDLE":1, "STAY":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "FOOT":4, "HINGE":2},
-  13: {"HPANEL-750x500":2, "BALL":8, "TUBE-750":4, "TUBE-500":4, "TUBE-350":4, "FOOT":4},
-  14: {"DOOR-750x350":1, "HPANEL-750x350":6, "BACK-750x350":5, "SIDE-350x350":10, "HANDLE":1, "STAY":1, "BALL":24, "TUBE-750":12, "TUBE-350":32, "FOOT":4, "HINGE":2},
-  15: {"DOOR-500x350":2, "HPANEL-750x500":1, "HPANEL-500x500":3, "BACK-750x350":1, "BACK-500x350":2, "SIDE-350x500":5, "HANDLE":2, "STAY":2, "BALL":18, "TUBE-750":4, "TUBE-500":15, "TUBE-350":12, "FOOT":6, "HINGE":4},
-  16: {"DOOR-750x350":1, "HPANEL-750x350":4, "BACK-750x350":3, "SIDE-350x350":6, "HANDLE":1, "STAY":1, "BALL":16, "TUBE-750":8, "TUBE-350":20, "FOOT":4, "HINGE":2},
-  17: {"DOOR-750x350":1, "HPANEL-750x350":6, "BACK-750x350":1, "SIDE-350x350":2, "HANDLE":1, "STAY":1, "BALL":24, "TUBE-750":12, "TUBE-350":32, "FOOT":4, "HINGE":2, "GLASS-750x350":8, "GLASS-350x350":8, "LED":4},
-  18: {"DOOR-750x350":1, "HPANEL-750x350":5, "BACK-750x350":1, "SIDE-350x350":2, "HANDLE":1, "STAY":1, "BALL":20, "TUBE-750":10, "TUBE-350":26, "FOOT":4, "HINGE":2, "GLASS-750x350":6, "GLASS-350x350":6, "LED":3},
-  19: {"DOOR-750x350":1, "HPANEL-750x350":4, "BACK-750x350":1, "SIDE-350x350":2, "HANDLE":1, "STAY":1, "BALL":16, "TUBE-750":8, "TUBE-350":20, "FOOT":4, "HINGE":2, "GLASS-750x350":4, "GLASS-350x350":4, "LED":2},
-  20: {"DOOR-750x350":1, "HPANEL-750x350":3, "BACK-750x350":1, "SIDE-350x350":2, "HANDLE":1, "STAY":1, "BALL":12, "TUBE-750":6, "TUBE-350":14, "FOOT":4, "HINGE":2, "GLASS-750x350":2, "GLASS-350x350":2, "LED":1},
-  21: {"DOOR-750x350":2, "HPANEL-750x350":3, "BACK-750x350":2, "SIDE-350x350":4, "HANDLE":2, "STAY":2, "BALL":12, "TUBE-750":6, "TUBE-350":14, "FOOT":4, "HINGE":4},
-  22: {"DOOR-500x350":1, "HPANEL-500x350":3, "BACK-500x350":1, "SIDE-350x350":2, "HANDLE":1, "STAY":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "FOOT":4, "HINGE":2}
+var BOM = { // 재고시스템 No → { 부품코드: 1대당 수량 }  (컨피규레이터 3D 모델에서 산출. 패널 = 상·하·후면·바깥 측면을 크기별로 합산, 사이드패널 = 칸 사이 타공 패널)
+  1: {"DOOR-750x350":2, "PANEL-750x350":8, "PANEL-350x350":2, "SIDEPANEL-350x350":1, "HINGE":4, "HANDLE":2, "BALL":18, "TUBE-750":12, "TUBE-350":21, "FOOT":6},
+  2: {"DOOR-750x350":2, "PANEL-750x350":8, "PANEL-350x350":2, "SIDEPANEL-350x350":1, "HINGE":4, "HANDLE":2, "BALL":18, "TUBE-750":12, "TUBE-350":15, "TUBE-175":6, "FOOT":6},
+  3: {"DOOR-750x350":4, "PANEL-750x350":12, "PANEL-350x350":4, "SIDEPANEL-350x350":2, "HINGE":8, "HANDLE":4, "BALL":24, "TUBE-750":16, "TUBE-350":24, "TUBE-175":6, "FOOT":6},
+  4: {"DOOR-750x350":4, "PANEL-750x350":10, "PANEL-350x350":4, "SIDEPANEL-350x350":2, "HINGE":8, "HANDLE":4, "BALL":18, "TUBE-750":12, "TUBE-350":21, "FOOT":6},
+  5: {"DOOR-750x350":3, "PANEL-750x350":12, "PANEL-350x350":2, "SIDEPANEL-350x350":2, "HINGE":6, "HANDLE":3, "BALL":24, "TUBE-750":18, "TUBE-350":28, "FOOT":8},
+  6: {"DOOR-750x350":3, "PANEL-750x350":7, "PANEL-350x350":6, "HINGE":6, "HANDLE":3, "BALL":16, "TUBE-750":8, "TUBE-350":20, "FOOT":4},
+  7: {"DOOR-750x350":1, "PANEL-750x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-750":6, "TUBE-350":14, "FOOT":4},
+  8: {"DOOR-750x350":2, "PANEL-750x350":6, "PANEL-350x350":4, "HINGE":4, "HANDLE":2, "BALL":16, "TUBE-750":8, "TUBE-350":16, "TUBE-175":4, "FOOT":4},
+  9: {"DOOR-750x350":3, "PANEL-750x350":12, "PANEL-350x350":2, "SIDEPANEL-350x350":2, "HINGE":6, "HANDLE":3, "BALL":24, "TUBE-750":18, "TUBE-350":20, "TUBE-175":8, "FOOT":8},
+  10: {"DOOR-750x350":3, "PANEL-750x350":9, "PANEL-350x350":2, "SIDEPANEL-350x350":2, "HINGE":6, "HANDLE":3, "BALL":16, "TUBE-750":12, "TUBE-350":16, "FOOT":8},
+  11: {"DOOR-500x175":1, "PANEL-500x350":3, "PANEL-500x175":1, "PANEL-350x175":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "FOOT":4},
+  12: {"DOOR-500x350":1, "PANEL-500x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "FOOT":4},
+  13: {"PANEL-750x500":2, "BALL":8, "TUBE-750":4, "TUBE-500":4, "TUBE-350":4, "FOOT":4},
+  14: {"DOOR-750x350":1, "PANEL-750x350":11, "PANEL-350x350":10, "HINGE":2, "HANDLE":1, "BALL":24, "TUBE-750":12, "TUBE-350":32, "FOOT":4},
+  15: {"DOOR-500x350":2, "PANEL-750x350":1, "PANEL-750x500":1, "PANEL-500x350":5, "PANEL-500x500":3, "SIDEPANEL-500x350":2, "HINGE":4, "HANDLE":2, "BALL":18, "TUBE-750":4, "TUBE-500":15, "TUBE-350":12, "FOOT":6},
+  16: {"DOOR-750x350":1, "PANEL-750x350":7, "PANEL-350x350":6, "HINGE":2, "HANDLE":1, "BALL":16, "TUBE-750":8, "TUBE-350":20, "FOOT":4},
+  17: {"DOOR-750x350":1, "PANEL-750x350":7, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":24, "TUBE-750":12, "TUBE-350":32, "FOOT":4, "GLASS-750x350":8, "GLASS-350x350":8, "LED":4},
+  18: {"DOOR-750x350":1, "PANEL-750x350":6, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":20, "TUBE-750":10, "TUBE-350":26, "FOOT":4, "GLASS-750x350":6, "GLASS-350x350":6, "LED":3},
+  19: {"DOOR-750x350":1, "PANEL-750x350":5, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":16, "TUBE-750":8, "TUBE-350":20, "FOOT":4, "GLASS-750x350":4, "GLASS-350x350":4, "LED":2},
+  20: {"DOOR-750x350":1, "PANEL-750x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-750":6, "TUBE-350":14, "FOOT":4, "GLASS-750x350":2, "GLASS-350x350":2, "LED":1},
+  21: {"DOOR-750x350":2, "PANEL-750x350":5, "PANEL-350x350":4, "HINGE":4, "HANDLE":2, "BALL":12, "TUBE-750":6, "TUBE-350":14, "FOOT":4},
+  22: {"DOOR-500x350":1, "PANEL-500x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "FOOT":4}
 };
 
 /* 이미지 파일은 컨피규레이터 번호(img/no01~no22). 재고시스템 No → 컨피규레이터 No: 재고1=컨피규2, 2=5, 3=6, 4=3, 5=7, 6=4, 7=1 */
 var IMG_MAP = {1:2, 2:5, 3:6, 4:3, 5:7, 6:4, 7:1};
 var IMG = function(no){ var f=IMG_MAP[no]||no; return "img/no"+String(f).padStart(2,"0")+".jpg"; };
-var S = { token:null, user:null, colors:[], items:[], log:[], parts:[], bom:{}, tab:"dash", fgView:"cards", pmode:"total", q:"", users:null };
+var APP_VERSION = "1.6";
+var S = { token:null, user:null, colors:[], items:[], log:[], parts:[], bom:{}, serverVer:null, pcat:"전체", tab:"dash", fgView:"cards", pmode:"total", q:"", users:null };
 
 /* ============================ API ============================ */
 var DEMO = !API_URL;
@@ -256,6 +253,7 @@ function api(payload){
   if(DEMO) return demoApi(payload);
   return fetch(API_URL,{method:"POST",body:JSON.stringify(Object.assign({token:S.token},payload))})
     .then(function(r){ return r.json(); })
+    .then(function(r){ if(r&&r.error==="bad_action"&&!r.message) r.message="서버(Code.gs)가 구버전입니다. 새 Code.gs를 붙여넣고 배포 관리 → 새 버전으로 배포하세요."; return r; })
     .catch(function(e){ return {ok:false,error:"network",message:"서버에 연결할 수 없습니다. API_URL과 배포 설정을 확인하세요."}; });
 }
 /* ---- 데모 백엔드 (API_URL 비어 있을 때만) ---- */
@@ -264,9 +262,17 @@ function demoApi(p){
   if(!demoDB) demoDB = demoSeed();
   var r = (function(){
     if(p.action==="login") return (p.id==="admin"&&p.pw==="planfurni1!")||(p.id==="staff"&&p.pw==="123456") ? {ok:true,token:"demo",user:{id:p.id,name:p.id==="admin"?"관리자":"직원",role:p.id==="admin"?"admin":"staff"}} : {ok:false,message:"아이디 또는 비밀번호가 맞지 않습니다."};
-    if(p.action==="getAll") return {ok:true,colors:Object.keys(COLOR_HEX),items:JSON.parse(JSON.stringify(demoDB.items)),log:demoDB.log.slice().reverse(),parts:defaultParts(),bom:BOM,updatedAt:new Date().toISOString()};
+    if(p.action==="getAll") return {ok:true,version:APP_VERSION,colors:Object.keys(COLOR_HEX),items:JSON.parse(JSON.stringify(demoDB.items)),log:demoDB.log.slice().reverse(),parts:defaultParts(),bom:BOM,updatedAt:new Date().toISOString()};
     if(p.action==="seedBomParts"){ var n=0; defaultParts().forEach(function(pt){ (pt.colored?Object.keys(COLOR_HEX):[""]).forEach(function(c){ var code="PT-"+pt.code+(c?"-"+COLOR_CODE[c]:""); if(!demoDB.items.some(function(x){return x.code===code})){ demoDB.items.push({code:code,kind:"부품",no:null,name:pt.name,color:c,spec:pt.spec,unit:"개",qty:0,cost:null,price:null,active:true,memo:c?"BOM 부품":"BOM 부품(공통)"}); n++; } }); }); return {ok:true,added:n}; }
     if(p.action==="move"){ var it=demoDB.items.find(function(x){return x.code===p.code}); if(!it) return {ok:false,message:"품목 없음"}; var b=it.qty,a=p.type==="입고"?b+Math.abs(p.qty):p.type==="출고"?b-Math.abs(p.qty):p.qty; if(a<0) return {ok:false,message:"재고가 부족합니다 (현재 "+b+")."}; it.qty=a; if(p.type==="입고"&&p.cost!==""&&p.cost!=null) it.cost=Number(p.cost); demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:it.code,type:p.type,before:b,after:a,delta:a-b,cost:p.cost||"",amount:p.cost?Math.abs(a-b)*p.cost:"",note:p.note||""}); return {ok:true,qty:a}; }
+    if(p.action==="disassemble"){ var fg=demoDB.items.find(function(x){return x.code===p.code}); if(!fg||fg.kind!=="완제품") return {ok:false,message:"완제품 품목 없음"}; var dq=parseInt(p.qty,10); if(!(dq>0)) return {ok:false,message:"분해 수량은 1 이상"}; if(fg.qty<dq) return {ok:false,message:"재고가 부족합니다 (현재 "+fg.qty+")."}; var bb=BOM[fg.no]; if(!bb) return {ok:false,message:"BOM 없음"}; var memo="No"+fg.no+" "+fg.color+" "+dq+"대 분해"; var b0=fg.qty; fg.qty-=dq; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:fg.code,type:"출고",before:b0,after:fg.qty,delta:-dq,cost:"",amount:"",note:"분해 → 부품"}); var cnt=0,cr=0;
+      defaultParts().forEach(function(pt){ var per=(bb[pt.code]||0)*dq; if(!per) return; cnt++; var pcode="PT-"+pt.code+(pt.colored?"-"+COLOR_CODE[fg.color]:""); var ex=demoDB.items.find(function(x){return x.code===pcode}); if(!ex){ ex={code:pcode,kind:"부품",no:null,name:pt.name,color:pt.colored?fg.color:"",spec:pt.spec,unit:"개",qty:0,cost:null,price:null,active:true,memo:"BOM 부품"}; demoDB.items.push(ex); cr++; } var e0=ex.qty; ex.qty+=per; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:ex.code,type:"입고",before:e0,after:ex.qty,delta:per,cost:"",amount:"",note:memo}); });
+      return {ok:true,qty:fg.qty,parts:cnt,created:cr}; }
+    if(p.action==="assemble"){ var fg2=demoDB.items.find(function(x){return x.code===p.code}); if(!fg2||fg2.kind!=="완제품") return {ok:false,message:"완제품 품목 없음"}; var aq=parseInt(p.qty,10); if(!(aq>0)) return {ok:false,message:"조립 수량은 1 이상"}; var bb2=BOM[fg2.no]; if(!bb2) return {ok:false,message:"BOM 없음"}; var plan=[],short=[];
+      defaultParts().forEach(function(pt){ var need=(bb2[pt.code]||0)*aq; if(!need) return; var pcode="PT-"+pt.code+(pt.colored?"-"+COLOR_CODE[fg2.color]:""); var ex=demoDB.items.find(function(x){return x.code===pcode}); var have=ex?ex.qty:0; if(have<need) short.push(pt.name+" "+pt.spec+(pt.colored?" "+fg2.color:"")+" (필요 "+need+" / 보유 "+have+")"); else plan.push({ex:ex,need:need}); });
+      if(short.length) return {ok:false,message:"부품이 부족합니다: "+short.join(", ")}; var memo2="No"+fg2.no+" "+fg2.color+" "+aq+"대 조립";
+      plan.forEach(function(x){ var e0=x.ex.qty; x.ex.qty-=x.need; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:x.ex.code,type:"출고",before:e0,after:x.ex.qty,delta:-x.need,cost:"",amount:"",note:memo2}); });
+      var f0=fg2.qty; fg2.qty+=aq; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:fg2.code,type:"입고",before:f0,after:fg2.qty,delta:aq,cost:"",amount:"",note:"부품 → 조립"}); return {ok:true,qty:fg2.qty,parts:plan.length}; }
     if(p.action==="upsertItem"){ var d=p.item, ex=demoDB.items.find(function(x){return x.code===d.code}); if(ex) Object.assign(ex,d,{qty:ex.qty}); else demoDB.items.push(Object.assign({qty:0},d)); return {ok:true}; }
     if(p.action==="listUsers") return {ok:true,users:demoDB.users};
     if(p.action==="addUser"){ if(demoDB.users.some(function(u){return u.id===p.id})) return {ok:false,message:"이미 있는 아이디입니다."}; demoDB.users.push({id:p.id,name:p.name||p.id,role:p.role,since:new Date().toISOString().slice(0,10)}); return {ok:true}; }
@@ -295,7 +301,9 @@ var toastT; function toast(msg,bad){ var t=$(".toast"); if(t) t.remove(); t=docu
 function loading(on){ $("#loading").classList.toggle("hidden",!on); }
 function fgItems(){ return S.items.filter(function(i){return i.kind==="완제품"&&i.active}); }
 function partItems(){ return S.items.filter(function(i){return i.kind!=="완제품"&&i.active}); }
-function defaultParts(){ return PART_DEF.map(function(p){return {code:p[0],name:p[1],spec:p[2],colored:p[3]==="Y"}}); }
+function defaultParts(){ return PART_DEF.map(function(p){return {code:p[0],name:p[1],spec:p[2],colored:p[3]==="Y",cat:p[4]}}); }
+function catOf(code){ code=String(code||"").toUpperCase(); return code.indexOf("DOOR")===0?"도어":code.indexOf("PANEL")>=0?"패널":"악세사리"; }
+var CATS=["도어","패널","악세사리"];
 function normSpec(s){ return String(s||"").toLowerCase().replace(/[×x*\s]/g,"x").replace(/\(.*?\)/g,""); }
 /* 부품 품목 → BOM 부품 매칭. 코드 PT-<부품코드>[-<색상코드>] 가 우선, 아니면 품목명+규격이 같으면 매칭 */
 function matchPart(item){
@@ -357,7 +365,8 @@ function load(){
   return api({action:"getAll"}).then(function(r){
     loading(false);
     if(!r.ok){ if(r.error==="auth"){ toast("세션이 만료되었습니다. 다시 로그인하세요.",true); logout(); } else toast(r.message||"불러오기 실패",true); return; }
-    S.colors=r.colors; S.items=r.items; S.log=r.log; S.parts=(r.parts&&r.parts.length)?r.parts:defaultParts(); S.bom=r.bom||BOM; render();
+    S.colors=r.colors; S.items=r.items; S.log=r.log; S.parts=(r.parts&&r.parts.length)?r.parts.map(function(p){ if(!p.cat) p.cat=catOf(p.code); return p; }):defaultParts(); S.bom=r.bom||BOM; S.serverVer=r.version||null; render();
+    if(!DEMO&&S.serverVer!==APP_VERSION) toast("서버(Code.gs) 버전이 "+(S.serverVer||"구버전")+"입니다. 화면은 v"+APP_VERSION+" — 배포 관리에서 새 버전으로 배포하세요.",true);
   });
 }
 $("#refreshBtn").addEventListener("click",function(){ load().then(function(){toast("새로고침 완료")}); });
@@ -405,21 +414,24 @@ function viewDash(){
   +'<div class="panel"><h3>최근 입출고 <span>최근 8건</span></h3>'+ (recent.length? logTable(recent) : '<div class="empty">아직 기록이 없습니다. 완제품 탭에서 수량을 눌러 입고·출고를 기록하세요.</div>') +'</div>';
 }
 /* 대시보드: 색상별 파츠 재고 = 완제품 BOM 환산 + 부품 보유 */
-function partsPanel(){
-  var st=partStock(), mode=S.pmode, cols=st.cols;
-  var colored=st.rows.filter(function(r){return r.part.colored}), common=st.rows.filter(function(r){return !r.part.colored});
+function partsPanel(cat,opts){
+  opts=opts||{}; var st=partStock(), mode=S.pmode, cols=st.cols;
+  var rowsAll=st.rows.filter(function(r){ return !cat||cat==="전체"||r.part.cat===cat; });
+  var colored=rowsAll.filter(function(r){return r.part.colored}), common=rowsAll.filter(function(r){return !r.part.colored});
   function val(x){ return mode==="bom"?x.bom:mode==="have"?x.have:x.total; }
   function cell(x,code,color){ var v=val(x); return '<td class="q'+(v===0?" z":"")+'"><button data-part="'+esc(code)+'" data-pcolor="'+esc(color)+'" title="상세">'+fmt(v)+(mode==="total"&&v?'<small>B '+fmt(x.bom)+' · P '+fmt(x.have)+'</small>':'')+'</button></td>'; }
   var groups=[], gmap={}; colored.forEach(function(r){ var g=r.part.name; if(!gmap[g]){gmap[g]=[];groups.push(g);} gmap[g].push(r); });
   var ctot={}; cols.forEach(function(c){ctot[c]=0}); var grand=0;
   var body=groups.map(function(g){ var rs=gmap[g]; return (groups.length>1?'<tr class="grp"><td colspan="'+(cols.length+2)+'">'+esc(g)+'</td></tr>':'')+rs.map(function(r){ var sum=0; var tds=cols.map(function(c){ var x=r.cols[c]; sum+=val(x); ctot[c]+=val(x); return cell(x,r.part.code,c); }).join(""); grand+=sum; return '<tr><td><span class="pn">'+esc(r.part.name)+'</span><span class="ps">'+esc(r.part.spec)+' · '+esc(r.part.code)+'</span></td>'+tds+'<td class="sum">'+fmt(sum)+'</td></tr>'; }).join(""); }).join("");
   var commonRows=common.map(function(r){ var x=r.common; return '<tr><td><span class="pn">'+esc(r.part.name)+'</span><span class="ps">'+esc(r.part.spec)+' · '+esc(r.part.code)+'</span></td><td class="q'+(x.bom?"":" z")+'"><button data-part="'+esc(r.part.code)+'" data-pcolor="">'+fmt(x.bom)+'</button></td><td class="q'+(x.have?"":" z")+'"><button data-part="'+esc(r.part.code)+'" data-pcolor="">'+fmt(x.have)+'</button></td><td class="sum">'+fmt(x.total)+'</td></tr>'; }).join("");
-  return '<div class="panel" style="margin-bottom:14px"><div class="pmhead"><h3>색상별 파츠 재고 <span>완제품을 분해했을 때 확보 가능한 부품 수량</span></h3><div class="seg"><button data-pmode="total" class="'+(mode==="total"?"on":"")+'">합계</button><button data-pmode="bom" class="'+(mode==="bom"?"on":"")+'">완제품 BOM 환산</button><button data-pmode="have" class="'+(mode==="have"?"on":"")+'">부품 보유</button></div></div>'
+  var segs='<div class="seg"><button data-pmode="total" class="'+(mode==="total"?"on":"")+'">합계</button><button data-pmode="bom" class="'+(mode==="bom"?"on":"")+'">완제품 BOM 환산</button><button data-pmode="have" class="'+(mode==="have"?"on":"")+'">부품 보유</button></div>';
+  var colorTable=colored.length?'<div class="tablewrap"><table class="mx pm"><thead><tr><th>부품</th>'+cols.map(function(c){return '<th>'+(COLOR_HEX[c]?'<span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>':'')+esc(c)+'</th>'}).join("")+'<th>합계</th></tr></thead><tbody>'+body
+  +'<tr class="total"><td>합계</td>'+cols.map(function(c){return '<td>'+fmt(ctot[c])+'</td>'}).join("")+'<td class="sum">'+fmt(grand)+'</td></tr></tbody></table></div>':'';
+  var commonTable=common.length?'<h3 style="margin:'+(colored.length?'18px':'0')+' 0 10px">공통 부품 <span>크롬 프레임 · 유리 · 조명 (색상 무관)</span></h3><div class="tablewrap"><table class="mx pm" style="min-width:520px"><thead><tr><th>부품</th><th>완제품 BOM 환산</th><th>부품 보유</th><th>합계</th></tr></thead><tbody>'+commonRows+'</tbody></table></div>':'';
+  return '<div class="panel" style="margin-bottom:14px"><div class="pmhead"><h3>'+(opts.title||'색상별 파츠 재고')+' <span>'+(opts.sub||'완제품을 분해했을 때 확보 가능한 부품 수량')+'</span></h3>'+segs+'</div>'
   +'<div class="legend" style="margin-bottom:10px"><b>합계</b> = 완제품 재고 × 1대당 BOM 수량 (<b>B</b>) + 부품 탭에 등록된 보유 수량 (<b>P</b>). 숫자를 누르면 어떤 제품에서 나오는지 볼 수 있습니다.</div>'
-  +'<div class="tablewrap"><table class="mx pm"><thead><tr><th>부품</th>'+cols.map(function(c){return '<th>'+(COLOR_HEX[c]?'<span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>':'')+esc(c)+'</th>'}).join("")+'<th>합계</th></tr></thead><tbody>'+body
-  +'<tr class="total"><td>합계</td>'+cols.map(function(c){return '<td>'+fmt(ctot[c])+'</td>'}).join("")+'<td class="sum">'+fmt(grand)+'</td></tr></tbody></table></div>'
-  +'<h3 style="margin:18px 0 10px">공통 부품 <span>크롬 프레임 · 유리 · 조명 (색상 무관)</span></h3><div class="tablewrap"><table class="mx pm" style="min-width:520px"><thead><tr><th>부품</th><th>완제품 BOM 환산</th><th>부품 보유</th><th>합계</th></tr></thead><tbody>'+commonRows+'</tbody></table></div>'
-  +'<p class="note">BOM(1대당 부품 구성)은 구글 시트 "BOM" 탭에서 수정할 수 있고, 완제품 카드의 BOM 버튼으로 제품별 구성을 확인할 수 있습니다.</p></div>';
+  +colorTable+commonTable
+  +(opts.compact?'':'<p class="note">BOM(1대당 부품 구성)은 구글 시트 "BOM" 탭에서 수정할 수 있고, 완제품 카드의 BOM 버튼으로 제품별 구성을 확인할 수 있습니다. 완제품을 실제로 분해했을 때는 완제품 수량을 눌러 "분해 →부품", 부품으로 조립했을 때는 "조립 ←부품"을 기록하면 부품 재고와 완제품 재고가 함께 움직입니다. 수입 컨테이너로 들어온 완제품은 그냥 "입고"를 쓰세요 (부품 차감 없음).</p>')+'</div>';
 }
 function viewFG(){
   var ps=products(); var q=S.q.trim().toLowerCase();
@@ -434,12 +446,23 @@ function viewFG(){
   return head+'<div class="cards">'+ps.map(function(p){ return '<div class="pc"><div class="im"><img src="'+IMG(p.no)+'" alt="No'+p.no+'" loading="lazy" onerror="this.style.opacity=.15"></div><div class="b"><div class="t"><b>No'+p.no+'<button class="bomb" data-bom="'+p.no+'">BOM</button></b><span>총 '+p.total+'대 · '+won(p.price||0)+'</span></div><div class="nm">'+esc(p.name)+' · '+esc(p.spec)+'</div><div class="cs">'+S.colors.map(function(c){ var it=p.cols[c]; var qn=it?it.qty:0; return '<button class="'+(qn===0?"z":"")+'" data-move="'+esc(it?it.code:"")+'"><span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>'+esc(c)+' <b>'+qn+'</b></button>'; }).join("")+'</div></div></div>'; }).join("")+'</div>';
 }
 function viewParts(){
-  var items=partItems(); var q=S.q.trim().toLowerCase(); if(q) items=items.filter(function(i){return (i.code+" "+i.name+" "+i.color+" "+i.spec).toLowerCase().indexOf(q)>=0});
-  var admin=S.user.role==="admin";
-  return '<div class="sec-h"><div><div class="eyebrow">PARTS</div><h2>부품 재고</h2></div><div class="tools"><input id="fgq" placeholder="검색 (코드, 이름, 색상)" value="'+esc(S.q)+'">'+(admin?'<button class="btn ghost sm" id="seedBomBtn" title="BOM에 나오는 부품을 색상별로 한 번에 등록 (수량 0)">BOM 부품 일괄 등록</button><button class="btn accent sm" id="addItemBtn">+ 부품 등록</button>':'')+'</div></div>'
-  +'<div class="tablewrap"><table class="t"><thead><tr><th>코드</th><th>품목명</th><th>색상</th><th>규격</th><th class="num">현재수량</th><th class="num">수입단가</th><th class="num">재고원가</th><th></th></tr></thead><tbody>'
-  +(items.length? items.map(function(i){ return '<tr><td><code>'+esc(i.code)+'</code></td><td>'+esc(i.name)+'</td><td>'+(i.color?'<span class="sw" style="--c:'+(COLOR_HEX[i.color]||"#ccc")+'"></span>'+esc(i.color):"—")+'</td><td>'+esc(i.spec||"—")+'</td><td class="num"><b>'+fmt(i.qty)+'</b> '+esc(i.unit)+'</td><td class="num">'+(i.cost?won(i.cost):"—")+'</td><td class="num">'+(i.cost?won(i.cost*i.qty):"—")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-move="'+esc(i.code)+'">입출고</button>'+(admin?' <button class="btn ghost sm" data-edit="'+esc(i.code)+'">수정</button>':'')+'</td></tr>'; }).join("") : '<tr><td colspan="8"><div class="empty">등록된 부품이 없습니다. '+(admin?'오른쪽 위 "부품 등록"으로 도어·판넬·볼조인트 같은 부품을 추가하면 완제품과 같은 방식으로 입고·출고를 기록할 수 있습니다.':'관리자가 부품을 등록하면 여기에 표시됩니다.')+'</div></td></tr>')
-  +'</tbody></table></div><p class="note">코드가 PT-&lt;BOM 부품코드&gt;-&lt;색상코드&gt; (예: PT-DOOR-750x350-WH, 공통 부품은 PT-BALL) 이거나 품목명·규격이 BOM과 같으면 대시보드 "색상별 파츠 재고"의 보유 수량(P)에 자동으로 합산됩니다. 입고 시 단가를 입력하면 재고원가와 손익 계산에 쓰입니다.</p>';
+  var admin=S.user.role==="admin", cat=S.pcat, st=partStock();
+  var q=S.q.trim().toLowerCase();
+  var items=partItems().map(function(i){ var p=matchPart(i); return {it:i,part:p,cat:p?p.cat:"기타"}; });
+  if(cat!=="전체") items=items.filter(function(x){return x.cat===cat});
+  if(q) items=items.filter(function(x){var i=x.it; return (i.code+" "+i.name+" "+i.color+" "+i.spec).toLowerCase().indexOf(q)>=0});
+  // 분류별 요약: BOM 환산 / 보유 / 합계
+  var sum={}; CATS.forEach(function(c){sum[c]={bom:0,have:0}});
+  st.rows.forEach(function(r){ var c=sum[r.part.cat]||sum["악세사리"]; if(r.part.colored) Object.keys(r.cols).forEach(function(k){ c.bom+=r.cols[k].bom; c.have+=r.cols[k].have; }); else { c.bom+=r.common.bom; c.have+=r.common.have; } });
+  var kpis='<div class="kpis" style="grid-template-columns:repeat(3,1fr)">'+CATS.map(function(c){ var x=sum[c]; return '<div class="kpi" style="cursor:pointer'+(cat===c?';border-color:var(--ink)':'')+'" data-pcat="'+c+'"><div class="l">'+c+'</div><div class="v">'+fmt(x.bom+x.have)+'<small>개</small></div><div class="s">BOM 환산 '+fmt(x.bom)+' · 보유 '+fmt(x.have)+'</div></div>'; }).join("")+'</div>';
+  var seg='<div class="seg">'+["전체"].concat(CATS).map(function(c){return '<button data-pcat="'+c+'" class="'+(cat===c?"on":"")+'">'+c+'</button>'}).join("")+'</div>';
+  return '<div class="sec-h"><div><div class="eyebrow">PARTS</div><h2>부품 재고</h2></div><div class="tools">'+seg+'<input id="fgq" placeholder="검색 (코드, 이름, 색상)" value="'+esc(S.q)+'">'+(admin?'<button class="btn ghost sm" id="seedBomBtn" title="BOM에 나오는 부품을 색상별로 한 번에 등록 (수량 0)">BOM 부품 일괄 등록</button><button class="btn accent sm" id="addItemBtn">+ 부품 등록</button>':'')+'</div></div>'
+  +kpis
+  +partsPanel(cat,{compact:true,title:(cat==="전체"?"파츠 요약":cat+" 요약"),sub:"완제품 BOM 환산 + 부품 보유"})
+  +'<h3 style="font-size:14px;font-weight:700;margin:6px 0 10px">등록된 부품 품목 <span style="font-size:12px;color:var(--muted);font-weight:500">'+(cat==="전체"?"전체":cat)+' · '+items.length+'건</span></h3>'
+  +'<div class="tablewrap"><table class="t"><thead><tr><th>코드</th><th>분류</th><th>품목명</th><th>색상</th><th>규격</th><th class="num">현재수량</th><th class="num">수입단가</th><th class="num">재고원가</th><th></th></tr></thead><tbody>'
+  +(items.length? items.map(function(x){ var i=x.it; return '<tr><td><code>'+esc(i.code)+'</code></td><td><span class="tag">'+esc(x.cat)+'</span></td><td>'+esc(i.name)+'</td><td>'+(i.color?'<span class="sw" style="--c:'+(COLOR_HEX[i.color]||"#ccc")+'"></span>'+esc(i.color):"—")+'</td><td>'+esc(i.spec||"—")+'</td><td class="num"><b>'+fmt(i.qty)+'</b> '+esc(i.unit)+'</td><td class="num">'+(i.cost?won(i.cost):"—")+'</td><td class="num">'+(i.cost?won(i.cost*i.qty):"—")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-move="'+esc(i.code)+'">입출고</button>'+(admin?' <button class="btn ghost sm" data-edit="'+esc(i.code)+'">수정</button>':'')+'</td></tr>'; }).join("") : '<tr><td colspan="9"><div class="empty">'+(partItems().length?'이 분류에 등록된 부품이 없습니다.':'등록된 부품이 없습니다. '+(admin?'"BOM 부품 일괄 등록"을 누르면 도어·패널·악세사리가 색상별로 한 번에 등록되고, 완제품을 분해하면 자동으로 여기에 들어옵니다.':'관리자가 부품을 등록하면 여기에 표시됩니다.'))+'</div></td></tr>')
+  +'</tbody></table></div><p class="note">코드가 PT-&lt;BOM 부품코드&gt;-&lt;색상코드&gt; (예: PT-DOOR-750x350-WH, 공통 부품은 PT-BALL) 이거나 품목명·규격이 BOM과 같으면 위 요약의 보유 수량(P)에 자동으로 합산되고 분류가 붙습니다. 입고 시 단가를 입력하면 재고원가와 손익 계산에 쓰입니다.</p>';
 }
 function logTable(rows){
   var byCode={}; S.items.forEach(function(i){byCode[i.code]=i});
@@ -458,7 +481,7 @@ function loadUsers(){
     tb.innerHTML=r.users.map(function(u){ return '<tr><td><b>'+esc(u.id)+'</b></td><td>'+esc(u.name)+'</td><td><span class="tag '+(u.role==="admin"?"admin":"")+'">'+(u.role==="admin"?"관리자":"직원")+'</span></td><td>'+esc(u.since||"")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-resetpw="'+esc(u.id)+'">비밀번호 재설정</button> '+(u.id!==S.user.id?'<button class="btn danger sm" data-deluser="'+esc(u.id)+'">삭제</button>':'')+'</td></tr>'; }).join(""); bind(); });
 }
 function viewMe(){
-  return '<div class="sec-h"><div><div class="eyebrow">ACCOUNT</div><h2>내 계정</h2></div></div><div class="grid2"><div class="panel"><h3>비밀번호 변경</h3><form id="pwForm"><div class="field"><label>현재 비밀번호</label><input type="password" id="pw0" autocomplete="current-password" required></div><div class="field"><label>새 비밀번호 (6자 이상)</label><input type="password" id="pw1" autocomplete="new-password" minlength="6" required></div><div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw2" autocomplete="new-password" required></div><button class="btn" type="submit">변경</button></form></div><div class="panel"><h3>로그인 정보</h3><p style="margin-bottom:6px"><b>'+esc(S.user.name||S.user.id)+'</b> ('+esc(S.user.id)+') · '+(S.user.role==="admin"?"관리자":"직원")+'</p><p class="note">"로그인 상태 유지"로 들어오면 이 기기에서 30일, 아니면 12시간 뒤 자동 만료됩니다. 비밀번호를 바꾸면 다른 기기의 로그인은 모두 풀립니다.</p><div style="margin-top:16px"><button class="btn ghost" id="logoutBtn">로그아웃</button></div></div></div>';
+  return '<div class="sec-h"><div><div class="eyebrow">ACCOUNT</div><h2>내 계정</h2></div></div><div class="grid2"><div class="panel"><h3>비밀번호 변경</h3><form id="pwForm"><div class="field"><label>현재 비밀번호</label><input type="password" id="pw0" autocomplete="current-password" required></div><div class="field"><label>새 비밀번호 (6자 이상)</label><input type="password" id="pw1" autocomplete="new-password" minlength="6" required></div><div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw2" autocomplete="new-password" required></div><button class="btn" type="submit">변경</button></form></div><div class="panel"><h3>로그인 정보</h3><p style="margin-bottom:6px"><b>'+esc(S.user.name||S.user.id)+'</b> ('+esc(S.user.id)+') · '+(S.user.role==="admin"?"관리자":"직원")+'</p><p class="note">화면 v'+APP_VERSION+' · 서버 '+(DEMO?"데모":S.serverVer?"v"+esc(S.serverVer):"구버전(1.4 이하)")+'</p><p class="note">"로그인 상태 유지"로 들어오면 이 기기에서 30일, 아니면 12시간 뒤 자동 만료됩니다. 비밀번호를 바꾸면 다른 기기의 로그인은 모두 풀립니다.</p><div style="margin-top:16px"><button class="btn ghost" id="logoutBtn">로그아웃</button></div></div></div>';
 }
 
 /* ============================ 이벤트 ============================ */
@@ -470,6 +493,7 @@ function bind(){
   var a=$("#addItemBtn"); if(a) a.onclick=function(){ openItem(null); };
   var sb=$("#seedBomBtn"); if(sb) sb.onclick=function(){ if(!confirm("BOM에 나오는 부품을 색상별로 품목에 등록합니다 (이미 있는 코드는 건너뜀, 수량 0). 진행할까요?")) return; sb.disabled=true; api({action:"seedBomParts"}).then(function(r){ sb.disabled=false; if(r.ok){ toast(r.added+"개 부품을 등록했습니다"); load(); } else toast(r.message||"실패",true); }); };
   $$("[data-pmode]").forEach(function(b){ b.onclick=function(){ S.pmode=b.dataset.pmode; render(); }; });
+  $$("[data-pcat]").forEach(function(b){ b.onclick=function(){ S.pcat=(S.pcat===b.dataset.pcat&&b.classList.contains("kpi"))?"전체":b.dataset.pcat; render(); }; });
   $$("[data-part]").forEach(function(b){ b.onclick=function(){ openPartDetail(b.dataset.part,b.dataset.pcolor); }; });
   $$("[data-bom]").forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); openBom(Number(b.dataset.bom)); }; });
   var u=$("#addUserBtn"); if(u) u.onclick=openAddUser;
@@ -485,21 +509,33 @@ function openMove(code){
   var title=it.kind==="완제품"?"No"+it.no+" · "+it.color:it.name+(it.color?" · "+it.color:"");
   var ov=modal('<h3>입고 · 출고 기록</h3><div class="sub">'+esc(title)+' <span style="color:#c9c3b8">·</span> '+esc(it.code)+'</div>'
   +'<div class="cur">'+(it.kind==="완제품"?'<div class="im"><img src="'+IMG(it.no)+'" alt="" onerror="this.style.display=\'none\'"></div>':'')+'<div>현재 재고<br><b>'+it.qty+'</b> '+esc(it.unit)+'</div><div style="margin-left:auto;text-align:right;font-size:12px;color:var(--muted)">'+esc(it.kind==="완제품"?it.name.replace(/^No\d+\s*/,""):it.spec||"")+'<br>'+esc(it.spec&&it.kind==="완제품"?it.spec:"")+'</div></div>'
-  +'<div class="field"><label>유형</label><div class="seg" id="mtype" style="display:flex"><button type="button" data-t="입고" class="on" style="flex:1">입고 (+)</button><button type="button" data-t="출고" style="flex:1">출고 (−)</button><button type="button" data-t="조정" style="flex:1">조정 (=)</button></div></div>'
+  +'<div class="field"><label>유형</label><div class="seg" id="mtype" style="display:flex;--pad:6px"><button type="button" data-t="입고" class="on" style="flex:1">입고 (+)</button><button type="button" data-t="출고" style="flex:1">출고 (−)</button><button type="button" data-t="조정" style="flex:1">조정 (=)</button>'+(it.kind==="완제품"?'<button type="button" data-t="조립" style="flex:1" title="부품 재고로 완제품을 조립 (BOM 부품 차감)">조립</button><button type="button" data-t="분해" style="flex:1" title="완제품을 분해해 BOM 부품으로 옮김">분해</button>':'')+'</div></div><div id="bomPreview" class="hidden" style="margin:-4px 0 12px"></div>'
   +'<div class="field"><label id="qlabel">입고 수량</label><div class="qtybox"><button type="button" id="qm">−</button><input id="mq" type="number" min="0" step="1" value="1" inputmode="numeric"><button type="button" id="qp">+</button></div></div>'
   +'<div class="field" id="costF"><label>수입 단가 (원, 선택)</label><input id="mcost" type="number" min="0" step="1000" placeholder="'+(it.cost?fmt(it.cost):"입고 단가")+'" inputmode="numeric"></div>'
   +'<div class="field"><label>메모 (선택)</label><input id="mnote" placeholder="예: 10/2 컨테이너 입고, 김OO 고객 출고"></div>'
   +'<div class="err" id="merr"></div><div class="foot"><button class="btn ghost" type="button" id="mcancel">취소</button><button class="btn accent" type="button" id="msave">저장</button></div>');
   var type="입고";
-  $$("#mtype button",ov).forEach(function(b){ b.onclick=function(){ type=b.dataset.t; $$("#mtype button",ov).forEach(function(x){x.classList.toggle("on",x===b)}); $("#qlabel",ov).textContent=type==="조정"?"최종 수량":type+" 수량"; $("#costF",ov).style.display=type==="입고"?"":"none"; if(type==="조정") $("#mq",ov).value=it.qty; else $("#mq",ov).value=1; }; });
-  $$("#mtype button",ov)[1].click();   // 기본 유형 = 출고
-  $("#qm",ov).onclick=function(){ var i=$("#mq",ov); i.value=Math.max(0,(parseInt(i.value,10)||0)-1); };
-  $("#qp",ov).onclick=function(){ var i=$("#mq",ov); i.value=(parseInt(i.value,10)||0)+1; };
+  function bomPreview(){ var box=$("#bomPreview",ov); if(type!=="분해"&&type!=="조립"){ box.classList.add("hidden"); return; } var n=parseInt($("#mq",ov).value,10)||0, b=S.bom[it.no]||S.bom[String(it.no)]||{}; var st=type==="조립"?partStock():null, shortN=0;
+    var li=S.parts.filter(function(p){return b[p.code]}).map(function(p){ var need=b[p.code]*n, have=null; if(st){ var r=st.rows.filter(function(x){return x.part.code===p.code})[0]; var x=r?(p.colored?r.cols[it.color]:r.common):null; have=x?x.have:0; if(have<need) shortN++; }
+      return '<div>'+esc(p.name)+' <span class="s">'+esc(p.spec)+(p.colored?' · '+esc(it.color):'')+(st?' · 보유 '+fmt(have):'')+'</span></div><div class="q"'+(st&&have<need?' style="color:var(--bad)"':'')+'>'+fmt(need)+'</div>'; }).join("");
+    box.innerHTML='<div class="cur" style="display:block;margin:0"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+(type==="조립"?n+'대 조립 시 부품 재고에서 빠지는 수량 (BOM × '+n+')'+(shortN?' — <span style="color:var(--bad)">부족 '+shortN+'종</span>':''):n+'대 분해 시 부품 재고로 들어가는 수량 (BOM × '+n+')')+'</div><div class="bomlist" style="font-size:12.5px">'+(li||'<div class="empty">BOM 없음</div>')+'</div></div>'; box.classList.remove("hidden"); }
+  $$("#mtype button",ov).forEach(function(b){ b.onclick=function(){ type=b.dataset.t; $$("#mtype button",ov).forEach(function(x){x.classList.toggle("on",x===b)}); $("#qlabel",ov).textContent=type==="조정"?"최종 수량":type+" 수량"; $("#costF",ov).style.display=type==="입고"?"":"none"; if(type==="조정") $("#mq",ov).value=it.qty; else $("#mq",ov).value=1; bomPreview(); }; });
+  $("#mq",ov).oninput=bomPreview;
+  $$("#mtype button",ov)[1].click();   // 기본 유형 = 출고 (입고를 기본으로 하려면 이 줄 삭제)
+  $("#qm",ov).onclick=function(){ var i=$("#mq",ov); i.value=Math.max(0,(parseInt(i.value,10)||0)-1); bomPreview(); };
+  $("#qp",ov).onclick=function(){ var i=$("#mq",ov); i.value=(parseInt(i.value,10)||0)+1; bomPreview(); };
   $("#mcancel",ov).onclick=function(){ov.remove()};
   $("#msave",ov).onclick=function(){
     var q=parseInt($("#mq",ov).value,10); if(isNaN(q)||q<0){ $("#merr",ov).textContent="수량을 확인하세요"; return; }
     if(type!=="조정"&&q===0){ $("#merr",ov).textContent="수량은 1 이상"; return; }
     var cost=$("#mcost",ov).value; $("#msave",ov).disabled=true;
+    if(type==="분해"||type==="조립"){
+      var asm=type==="조립";
+      api({action:asm?"assemble":"disassemble",code:code,qty:q,note:$("#mnote",ov).value}).then(function(r){
+        if(!r.ok){ $("#msave",ov).disabled=false; $("#merr",ov).textContent=r.message||(type+" 실패"); return; }
+        ov.remove(); toast(asm?title+" "+q+"대 조립 ← 부품 "+r.parts+"종 출고 (재고 "+r.qty+"대)":title+" "+q+"대 분해 → 부품 "+r.parts+"종 입고 (남은 재고 "+r.qty+"대)"); load();
+      }); return;
+    }
     api({action:"move",code:code,type:type,qty:q,cost:type==="입고"&&cost!==""?Number(cost):"",note:$("#mnote",ov).value}).then(function(r){
       if(!r.ok){ $("#msave",ov).disabled=false; $("#merr",ov).textContent=r.message||"저장 실패"; return; }
       ov.remove(); toast(title+" → "+r.qty+it.unit+" 저장됨"); load();
@@ -533,7 +569,7 @@ function openPartDetail(code,color){
 function openItem(code){
   var it=code?S.items.find(function(i){return i.code===code}):null;
   var ov=modal('<h3>'+(it?"품목 수정":"부품 등록")+'</h3><div class="sub">'+(it?"코드는 바꿀 수 없습니다. 수량은 입출고로만 바뀝니다.":"재고를 셀 최소 단위로 등록하세요. 색상이 다르면 별도 품목입니다.")+'</div>'
-  +(it?'':'<div class="field"><label>BOM 부품에서 선택 (선택하면 코드·이름·규격 자동 입력)</label><select id="ipart"><option value="">— 직접 입력</option>'+S.parts.map(function(p){return '<option value="'+esc(p.code)+'">'+esc(p.name+' '+p.spec)+(p.colored?'':' (공통)')+'</option>'}).join("")+'</select></div>')
+  +(it?'':'<div class="field"><label>BOM 부품에서 선택 (선택하면 코드·이름·규격 자동 입력)</label><select id="ipart"><option value="">— 직접 입력</option>'+S.parts.map(function(p){return '<option value="'+esc(p.code)+'">'+esc('['+p.cat+'] '+p.name+' '+p.spec)+(p.colored?'':' (공통)')+'</option>'}).join("")+'</select></div>')
   +'<div class="field"><label>코드</label><input id="icode" value="'+esc(it?it.code:"PT-")+'" '+(it?"readonly":"")+' placeholder="PT-DOOR-750x350-WH"></div>'
   +'<div class="row"><div class="field"><label>구분</label><select id="ikind"><option value="부품"'+(!it||it.kind==="부품"?" selected":"")+'>부품</option><option value="완제품"'+(it&&it.kind==="완제품"?" selected":"")+'>완제품</option></select></div><div class="field"><label>제품번호 (완제품만)</label><input id="ino" type="number" value="'+esc(it&&it.no!=null?it.no:"")+'"></div></div>'
   +'<div class="field"><label>품목명</label><input id="iname" value="'+esc(it?it.name:"")+'" placeholder="예: 도어 750 (드롭다운)"></div>'
