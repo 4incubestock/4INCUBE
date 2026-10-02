@@ -12,7 +12,7 @@
    설정 — Apps Script 배포 후 받은 "웹 앱 URL" 을 아래 따옴표 안에 붙여넣으세요.
    비워 두면 데모 모드(브라우저 안에서만 동작, 저장 안 됨)로 열립니다.
    ============================================================ */
-var API_URL = "https://script.google.com/macros/s/AKfycbwAIpWQxa8j-KqAC8LjgfPMNG9LeD_kBjDpAsfnxjeVjMsK4fHSDapdgSE3AOHU8jeDFg/exec";
+var API_URL = "https://script.google.com/macros/s/AKfycbx2QtdF6QjNr67MQJTJaij-W2Q3E4ZHn9d49kHBmyr2NKZghWkJnoG04LANy9ejqR5-DQ/exec";
 </script>
 <style>
 :root{--bg:#f4f2ee;--surface:#fff;--surface2:#faf8f4;--line:#e6e0d6;--line2:#d9d3c8;--ink:#1b1a18;--ink2:#3f3b35;--muted:#8a8378;--accent:#E9641C;--accent2:#f5b58e;--navy:#2B3646;--ok:#3a8f5c;--warn:#d9a31a;--bad:#d93a3a;--r:14px}
@@ -167,7 +167,7 @@ table.t tr:hover td{background:#fcfaf6}
 @media (max-width:520px){.kpis{grid-template-columns:1fr 1fr}.kpi .v{font-size:22px}.cards{grid-template-columns:1fr 1fr}.pc .cs button{font-size:11px}}
 .cost{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}.cost b{color:var(--ink2)}
 .mg{font-weight:700}.mg.good{color:var(--ok)}.mg.bad{color:var(--bad)}
-.setform{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:end}.setform .field{margin:0}
+.setform{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:end}.setform .field{margin:0}
 .inl{display:inline-flex;gap:6px;align-items:center}.inl input{width:118px;padding:6px 8px;font-size:13px;text-align:right}
 tr.nocost td{background:#fff8e8}
 table.t .pn{font-weight:700;display:block}table.t .ps{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}table.t .bomb{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap;background:#fff;cursor:pointer}
@@ -287,8 +287,15 @@ function demoApi(p){
     if(p.action==="getAll"){ var adm=S.user&&S.user.role==="admin", st=demoDB.settings; var its=JSON.parse(JSON.stringify(demoDB.items)).map(function(it){ if(it.wholesale==null&&it.kind==="완제품"&&it.price&&st.wholesalePct){ it.wholesale=Math.round(it.price*st.wholesalePct/100/1000)*1000; it.wholesaleAuto=true; } if(!adm){ delete it.cost; delete it.price; } return it; });
       var lg=demoDB.log.slice().reverse().map(function(r){ r=Object.assign({},r); if(!adm){ r.cost=""; r.amount=""; } return r; });
       var res={ok:true,version:APP_VERSION,colors:Object.keys(COLOR_HEX),items:its,log:lg,parts:defaultParts(),bom:BOM,updatedAt:new Date().toISOString()}; if(adm){ res.settings=st; res.partCost=demoDB.partCost; res.costNotes=PART_COST_NOTE; } return res; }
-    if(p.action==="setSettings"){ ["rate","extraPct","wholesalePct"].forEach(function(k){ if(p[k]!==""&&p[k]!=null&&!isNaN(Number(p[k]))) demoDB.settings[k]=Number(p[k]); }); return {ok:true,settings:demoDB.settings}; }
+    if(p.action==="setSettings"){ ["rate","extraPct","wholesalePct","usdCny"].forEach(function(k){ if(p[k]!==""&&p[k]!=null&&!isNaN(Number(p[k]))) demoDB.settings[k]=Number(p[k]); }); return {ok:true,settings:demoDB.settings}; }
     if(p.action==="setPartCost"){ if(!p.code||isNaN(Number(p.cny))) return {ok:false,message:"단가를 확인하세요"}; demoDB.partCost[p.code]=Number(p.cny); return {ok:true}; }
+    if(p.action==="cleanLegacyParts"){ var parts=defaultParts(), bc={}; parts.forEach(function(x){bc[x.code.toUpperCase()]=x}); var c2c={}; Object.keys(COLOR_CODE).forEach(function(c){c2c[COLOR_CODE[c]]=c}); var mg=0,rn=0,dl=0,lf=[];
+      demoDB.items.slice().forEach(function(it){ if(it.kind==="완제품") return; var m=/^PT-(.+?)(?:-([A-Z]{2}))?$/i.exec(it.code); if(!m) return; var part=m[1].toUpperCase(), cc=(m[2]||"").toUpperCase(); if(cc&&!c2c[cc]){ part+="-"+cc; cc=""; } if(bc[part]) return;
+        var t; if(part==="STAY") t=null; else { var mm=/^(HPANEL|BACK|SIDE|TOP|BOTTOM|PANEL|REAR)-(\d+)X(\d+)$/.exec(part); if(mm){ var a=+mm[2],b=+mm[3]; var tt="PANEL-"+Math.max(a,b)+"x"+Math.min(a,b); t=bc[tt.toUpperCase()]?tt:undefined; } else t=undefined; }
+        if(t===undefined||t===null){ if(it.qty===0){ demoDB.items.splice(demoDB.items.indexOf(it),1); dl++; } else lf.push(it.code+" ("+it.qty+")"); return; }
+        var pt=bc[t.toUpperCase()], color=cc?c2c[cc]:(it.color||""), nc="PT-"+pt.code+(pt.colored&&color?"-"+COLOR_CODE[color]:""); var ex=demoDB.items.find(function(x){return x.code===nc&&x!==it});
+        if(ex){ ex.qty+=it.qty; demoDB.items.splice(demoDB.items.indexOf(it),1); mg++; } else { it.code=nc; it.name=pt.name; it.spec=pt.spec; it.color=pt.colored?color:""; rn++; } });
+      return {ok:true,merged:mg,renamed:rn,deleted:dl,left:lf}; }
     if(p.action==="setWholesale"){ var wn=0; demoDB.items.forEach(function(it){ if(it.kind==="완제품"&&it.no===Number(p.no)){ it.wholesale=p.wholesale===""||p.wholesale==null?null:Number(p.wholesale); wn++; } }); return {ok:true,updated:wn}; }
     if(p.action==="seedBomParts"){ var n=0; defaultParts().forEach(function(pt){ (pt.colored?Object.keys(COLOR_HEX):[""]).forEach(function(c){ var code="PT-"+pt.code+(c?"-"+COLOR_CODE[c]:""); if(!demoDB.items.some(function(x){return x.code===code})){ demoDB.items.push({code:code,kind:"부품",no:null,name:pt.name,color:c,spec:pt.spec,unit:"개",qty:0,cost:null,price:null,active:true,memo:c?"BOM 부품":"BOM 부품(공통)"}); n++; } }); }); return {ok:true,added:n}; }
     if(p.action==="move"){ var it=demoDB.items.find(function(x){return x.code===p.code}); if(!it) return {ok:false,message:"품목 없음"}; var b=it.qty,a=p.type==="입고"?b+Math.abs(p.qty):p.type==="출고"?b-Math.abs(p.qty):p.qty; if(a<0) return {ok:false,message:"재고가 부족합니다 (현재 "+b+")."}; it.qty=a; if(p.type==="입고"&&p.cost!==""&&p.cost!=null&&S.user.role==="admin") it.cost=Number(p.cost); demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:it.code,type:p.type,before:b,after:a,delta:a-b,cost:p.cost||"",amount:p.cost?Math.abs(a-b)*p.cost:"",note:p.note||""}); return {ok:true,qty:a}; }
@@ -314,7 +321,7 @@ function demoSeed(){
   var SEED={1:[5,4,1,3,3,2,2,2],2:[5,8,3,5,1,3,3,2],3:[1,4,2,5,6,2,0,0],4:[0,3,1,4,1,2,0,1],5:[3,4,0,5,3,2,1,2],6:[0,3,0,5,3,2,0,1],7:[2,1,0,3,6,1,0,2],8:[0,3,0,2,2,3,1,1],9:[5,4,0,3,2,3,0,2],10:[5,6,0,4,4,1,0,2],11:[2,2,0,3,2,3,6,2],12:[2,4,1,9,5,5,4,0],13:[11,13,1,9,9,5,3,0],14:[1,0,0,1,0,0,1,1]};
   var CC={"화이트":"WH","블랙":"BK","오렌지":"OR","노랑":"YE","스틸블루":"SB","올리브그린":"OG","분홍":"PK","베이지":"BG"};
   var items=[]; P.forEach(function(p){ Object.keys(COLOR_HEX).forEach(function(c,j){ items.push({code:"FG-"+String(p[0]).padStart(2,"0")+"-"+CC[c],kind:"완제품",no:p[0],name:"No"+p[0]+" "+p[1],color:c,spec:p[2],unit:"대",qty:(SEED[p[0]]||[])[j]||0,cost:null,price:p[3],active:true,memo:""}); }); });
-  return {items:items,log:[],users:[{id:"admin",name:"관리자",role:"admin",since:"2026-09-29"},{id:"staff",name:"직원",role:"staff",since:"2026-09-29"}],settings:{rate:200,extraPct:0,wholesalePct:60},partCost:JSON.parse(JSON.stringify(PART_COST))};
+  return {items:items,log:[],users:[{id:"admin",name:"관리자",role:"admin",since:"2026-09-29"},{id:"staff",name:"직원",role:"staff",since:"2026-09-29"}],settings:{rate:200,extraPct:0,wholesalePct:60,usdCny:6.71},partCost:JSON.parse(JSON.stringify(PART_COST))};
 }
 
 /* ============================ 유틸 ============================ */
@@ -369,6 +376,8 @@ function hasCost(){ return isAdmin()&&!!S.partCost&&!!S.settings; }
 function cnyKrw(cny){ var st=S.settings||{rate:200,extraPct:0}; return Math.round((Number(cny)||0)*st.rate*(1+(st.extraPct||0)/100)); }
 function partCny(code){ var v=S.partCost?S.partCost[code]:null; return v==null?0:Number(v)||0; }
 function partKrw(code){ return cnyKrw(partCny(code)); }
+function cnyUsd(cny){ var r=(S.settings||{}).usdCny||6.71; return (Number(cny)||0)/r; }
+function fmtUsd(n){ return "$"+(Math.round((Number(n)||0)*100)/100).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function fmtCny(n){ return "¥"+(Math.round((Number(n)||0)*10)/10).toLocaleString("ko-KR",{minimumFractionDigits:1,maximumFractionDigits:1}); }
 /* 제품 1대 원가: {cny, krw, lines:[{code,qty,cny,krw}], missing:[부품코드]} */
 function bomCost(no){ var b=S.bom[no]||S.bom[String(no)]||{}, out={cny:0,krw:0,lines:[],missing:[]}; if(!hasCost()) return out;
@@ -507,8 +516,10 @@ function viewParts(){
   var sum={}; CATS.forEach(function(c){sum[c]={bom:0,have:0}});
   st.rows.forEach(function(r){ var c=sum[r.part.cat]||sum["악세사리"]; if(r.part.colored) Object.keys(r.cols).forEach(function(k){ c.bom+=r.cols[k].bom; c.have+=r.cols[k].have; }); else { c.bom+=r.common.bom; c.have+=r.common.have; } });
   var kpis='<div class="kpis" style="grid-template-columns:repeat(3,1fr)">'+CATS.map(function(c){ var x=sum[c]; return '<div class="kpi" style="cursor:pointer'+(cat===c?';border-color:var(--ink)':'')+'" data-pcat="'+c+'"><div class="l">'+c+'</div><div class="v">'+fmt(x.bom+x.have)+'<small>개</small></div><div class="s">BOM 환산 '+fmt(x.bom)+' · 보유 '+fmt(x.have)+'</div></div>'; }).join("")+'</div>';
-  var seg='<div class="seg">'+["전체"].concat(CATS).map(function(c){return '<button data-pcat="'+c+'" class="'+(cat===c?"on":"")+'">'+c+'</button>'}).join("")+'</div>';
-  return '<div class="sec-h"><div><div class="eyebrow">PARTS</div><h2>부품 재고</h2></div><div class="tools">'+seg+'<input id="fgq" placeholder="검색 (코드, 이름, 색상)" value="'+esc(S.q)+'">'+(admin?'<button class="btn ghost sm" id="seedBomBtn" title="BOM에 나오는 부품을 색상별로 한 번에 등록 (수량 0)">BOM 부품 일괄 등록</button><button class="btn accent sm" id="addItemBtn">+ 부품 등록</button>':'')+'</div></div>'
+  var legacy=partItems().filter(function(i){return !matchPart(i)});
+  var seg='<div class="seg">'+["전체"].concat(CATS).concat(legacy.length?["기타"]:[]).map(function(c){return '<button data-pcat="'+c+'" class="'+(cat===c?"on":"")+'">'+c+'</button>'}).join("")+'</div>';
+  var legacyBar=legacy.length?'<div class="panel" style="margin-bottom:14px;border-color:#f0d9a3;background:#fff8e8"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><div style="flex:1;font-size:13px"><b>구버전 부품 코드 '+legacy.length+'건</b> — 상·하판/뒷판/측판/스토퍼 암 등 예전 코드(예: PT-HPANEL-750x350-WH)로 등록된 품목은 현재 BOM(패널 · 사이드패널 · 힌지)과 연결되지 않아 분류 "기타"로만 보이고 파츠 집계에도 빠집니다.'+(admin?' "정리"를 누르면 상·하판·뒷판·측판은 같은 크기의 패널 코드로 합쳐지고(수량 합산), 스토퍼 암과 수량 0 인 옛 품목은 삭제됩니다.':' 관리자가 정리할 수 있습니다.')+'</div>'+(admin?'<button class="btn accent sm" id="cleanLegacyBtn">구버전 코드 정리</button>':'')+'</div></div>':'';
+  return legacyBar+'<div class="sec-h"><div><div class="eyebrow">PARTS</div><h2>부품 재고</h2></div><div class="tools">'+seg+'<input id="fgq" placeholder="검색 (코드, 이름, 색상)" value="'+esc(S.q)+'">'+(admin?'<button class="btn ghost sm" id="seedBomBtn" title="BOM에 나오는 부품을 색상별로 한 번에 등록 (수량 0)">BOM 부품 일괄 등록</button><button class="btn accent sm" id="addItemBtn">+ 부품 등록</button>':'')+'</div></div>'
   +kpis
   +partsPanel(cat,{compact:true,title:(cat==="전체"?"파츠 요약":cat+" 요약"),sub:"완제품 BOM 환산 + 부품 보유"})
   +'<h3 style="font-size:14px;font-weight:700;margin:6px 0 10px">등록된 부품 품목 <span style="font-size:12px;color:var(--muted);font-weight:500">'+(cat==="전체"?"전체":cat)+' · '+items.length+'건</span></h3>'
@@ -539,7 +550,7 @@ function viewMe(){
 
 /* ============================ 원가 · 설정 (관리자) ============================ */
 function viewCost(){
-  var st=S.settings||{rate:200,extraPct:0,wholesalePct:60}, ps=products(), partsAll=S.parts.slice();
+  var st=S.settings||{rate:200,extraPct:0,wholesalePct:60,usdCny:6.71}, ps=products(), partsAll=S.parts.slice();
   var q=S.q.trim().toLowerCase();
   var missing=partsAll.filter(function(p){return !partCny(p.code)}).length;
   var head='<div class="sec-h"><div><div class="eyebrow">COST · SETTINGS</div><h2>원가 · 설정</h2></div><div class="tools"><span class="note">관리자에게만 보이는 화면입니다. 직원 계정에는 도매가만 전송됩니다.</span></div></div>';
@@ -547,23 +558,24 @@ function viewCost(){
    +'<div class="field"><label>환율 (원 / 1 CNY)</label><input id="sRate" type="number" step="0.1" min="0" value="'+esc(st.rate)+'"></div>'
    +'<div class="field"><label>부대비용률 (%) — 운송·관세 등</label><input id="sExtra" type="number" step="0.1" min="0" value="'+esc(st.extraPct)+'"></div>'
    +'<div class="field"><label>도매가율 (%) — 도매가 미지정 제품: 판매가 × 비율</label><input id="sWs" type="number" step="1" min="0" max="100" value="'+esc(st.wholesalePct)+'"></div>'
-   +'<div class="field" style="grid-column:1/-1;display:flex;gap:10px;align-items:center"><button class="btn accent" type="submit">저장</button><span class="note">예) 100 CNY → '+won(cnyKrw(100))+' · 구글 시트 "설정" 탭과 같은 값입니다.</span></div></form></div>';
+   +'<div class="field"><label>달러환율 (CNY / 1 USD) — 달러 표시용</label><input id="sUsd" type="number" step="0.01" min="0" value="'+esc(st.usdCny||6.71)+'"></div>'
+   +'<div class="field" style="grid-column:1/-1;display:flex;gap:10px;align-items:center"><button class="btn accent" type="submit">저장</button><span class="note">예) 100 CNY → '+won(cnyKrw(100))+' = '+fmtUsd(cnyUsd(100))+' · 구글 시트 "설정" 탭과 같은 값입니다.</span></div></form></div>';
   // 제품별 원가
   var prodRows=ps.map(function(p){ var bc=bomCost(p.no); return '<tr'+(bc.missing.length?' class="nocost"':'')+'><td><span class="pn">No'+p.no+'<button class="bomb" data-bom="'+p.no+'">BOM</button></span><span class="ps">'+esc(p.name)+' · '+esc(p.spec)+'</span></td>'
-     +'<td class="num">'+(bc.cny?fmtCny(bc.cny):"—")+(bc.missing.length?'<br><small style="color:var(--bad)">미입력 '+bc.missing.length+'종</small>':'')+'</td><td class="num"><b>'+(bc.krw?won(bc.krw):"—")+'</b></td>'
+     +'<td class="num">'+(bc.cny?fmtCny(bc.cny):"—")+(bc.missing.length?'<br><small style="color:var(--bad)">미입력 '+bc.missing.length+'종</small>':'')+'</td><td class="num">'+(bc.cny?fmtUsd(cnyUsd(bc.cny)):"—")+'</td><td class="num"><b>'+(bc.krw?won(bc.krw):"—")+'</b></td>'
      +'<td class="num">'+(p.price?won(p.price):"—")+'</td><td class="num">'+mgTag(p.price,bc.krw)+'</td>'
      +'<td class="num"><span class="inl"><input type="number" step="1000" min="0" data-wsno="'+p.no+'" value="'+(p.wholesale!=null&&!p.wholesaleAuto?esc(p.wholesale):"")+'" placeholder="'+(p.wholesaleAuto?"자동 "+fmt(p.wholesale):"미지정")+'"><button class="btn ghost sm" data-wssave="'+p.no+'">저장</button></span></td><td class="num">'+mgTag(p.wholesale,bc.krw)+'</td>'
      +'<td class="num">'+fmt(p.total)+'</td><td class="num">'+(bc.krw?won(bc.krw*p.total):"—")+'</td></tr>'; }).join("");
   var totCost=ps.reduce(function(a,p){return a+bomCost(p.no).krw*p.total},0), totSale=ps.reduce(function(a,p){return a+(p.price||0)*p.total},0), totWs=ps.reduce(function(a,p){return a+(p.wholesale||0)*p.total},0);
-  var prodPanel='<div class="panel" style="margin-bottom:14px"><h3>제품별 원가 · 마진 <span>BOM 1대 기준 · 도매가는 비우면 판매가 × 도매가율(천원 반올림)</span></h3><div class="tablewrap"><table class="t"><thead><tr><th>제품</th><th class="num">BOM 원가 (CNY)</th><th class="num">수입원가 (원)</th><th class="num">판매가</th><th class="num">마진</th><th class="num">도매가 (직접 지정)</th><th class="num">도매 마진</th><th class="num">재고</th><th class="num">재고 원가액</th></tr></thead><tbody>'+prodRows
-   +'<tr class="total"><td>합계</td><td></td><td></td><td class="num">'+won(totSale)+'</td><td class="num">'+mgTag(totSale,totCost)+'</td><td class="num">'+won(totWs)+'</td><td class="num">'+mgTag(totWs,totCost)+'</td><td class="num">'+fmt(ps.reduce(function(a,p){return a+p.total},0))+'</td><td class="num"><b>'+won(totCost)+'</b></td></tr></tbody></table></div>'
+  var prodPanel='<div class="panel" style="margin-bottom:14px"><h3>제품별 원가 · 마진 <span>BOM 1대 기준 · 도매가는 비우면 판매가 × 도매가율(천원 반올림)</span></h3><div class="tablewrap"><table class="t"><thead><tr><th>제품</th><th class="num">BOM 원가 (CNY)</th><th class="num">달러 (USD)</th><th class="num">수입원가 (원)</th><th class="num">판매가</th><th class="num">마진</th><th class="num">도매가 (직접 지정)</th><th class="num">도매 마진</th><th class="num">재고</th><th class="num">재고 원가액</th></tr></thead><tbody>'+prodRows
+   +'<tr class="total"><td>합계</td><td></td><td></td><td></td><td class="num">'+won(totSale)+'</td><td class="num">'+mgTag(totSale,totCost)+'</td><td class="num">'+won(totWs)+'</td><td class="num">'+mgTag(totWs,totCost)+'</td><td class="num">'+fmt(ps.reduce(function(a,p){return a+p.total},0))+'</td><td class="num"><b>'+won(totCost)+'</b></td></tr></tbody></table></div>'
    +'<p class="note">마진 = (가격 − 원가) ÷ 가격. 초록 30% 이상, 빨강 15% 미만. 원가에는 중국 출고단가와 환율·부대비용률만 반영되고 국내 물류·포장·판매 수수료는 포함되지 않습니다.</p></div>';
   // 부품 단가표
   var parts=partsAll; if(q) parts=parts.filter(function(p){return (p.code+" "+p.name+" "+p.spec+" "+p.cat+" "+(S.costNotes[p.code]||"")).toLowerCase().indexOf(q)>=0});
   var partRows=parts.map(function(p){ var c=partCny(p.code); return '<tr'+(c?'':' class="nocost"')+'><td><span class="tag">'+esc(p.cat)+'</span></td><td><span class="pn">'+esc(p.name)+'</span><span class="ps">'+esc(p.spec)+' · '+esc(p.code)+(p.colored?'':' · 공통')+'</span></td>'
-     +'<td class="num"><span class="inl">¥<input type="number" step="0.1" min="0" data-pcno="'+esc(p.code)+'" value="'+(c?esc(c):"")+'" placeholder="0.0"><button class="btn ghost sm" data-pcsave="'+esc(p.code)+'">저장</button></span></td><td class="num">'+(c?won(cnyKrw(c)):"—")+'</td><td style="color:var(--muted);font-size:12px">'+esc(S.costNotes[p.code]||"")+'</td></tr>'; }).join("");
+     +'<td class="num"><span class="inl">¥<input type="number" step="0.1" min="0" data-pcno="'+esc(p.code)+'" value="'+(c?esc(c):"")+'" placeholder="0.0"><button class="btn ghost sm" data-pcsave="'+esc(p.code)+'">저장</button></span></td><td class="num">'+(c?fmtUsd(cnyUsd(c)):"—")+'</td><td class="num">'+(c?won(cnyKrw(c)):"—")+'</td><td style="color:var(--muted);font-size:12px">'+esc(S.costNotes[p.code]||"")+'</td></tr>'; }).join("");
   var partPanel='<div class="panel"><div class="pmhead"><h3>부품 단가표 <span>중국 출고단가 (CNY, 1개 기준)'+(missing?' · <span style="color:var(--bad)">미입력 '+missing+'종</span>':'')+'</span></h3><input id="fgq" placeholder="검색 (부품, 규격, 메모)" value="'+esc(S.q)+'" style="max-width:260px"></div>'
-   +'<div class="tablewrap"><table class="t"><thead><tr><th>분류</th><th>부품</th><th class="num">CNY 단가</th><th class="num">원화 환산</th><th>견적 메모</th></tr></thead><tbody>'+(partRows||'<tr><td colspan="5"><div class="empty">검색 결과 없음</div></td></tr>')+'</tbody></table></div>'
+   +'<div class="tablewrap"><table class="t"><thead><tr><th>분류</th><th>부품</th><th class="num">CNY 단가</th><th class="num">달러</th><th class="num">원화 환산</th><th>견적 메모</th></tr></thead><tbody>'+(partRows||'<tr><td colspan="6"><div class="empty">검색 결과 없음</div></td></tr>')+'</tbody></table></div>'
    +'<p class="note">견적서(模块配件报价)의 단가를 넣어 두었습니다. 힌지는 1개 단가(도어 1개 = 힌지 2개 = ¥118), 확장 슬리브(膨胀管)는 튜브 1개당 2개로 BOM에 넣었습니다. 값은 구글 시트 "부품단가" 탭에도 같이 저장됩니다.</p></div>';
   return head+setPanel+prodPanel+partPanel;
 }
@@ -575,6 +587,7 @@ function bind(){
   $$("[data-view]").forEach(function(b){ b.onclick=function(){ S.fgView=b.dataset.view; render(); }; });
   var q=$("#fgq"); if(q){ q.oninput=function(){ S.q=q.value; var pos=q.selectionStart; render(); var q2=$("#fgq"); q2.focus(); q2.setSelectionRange(pos,pos); }; }
   var a=$("#addItemBtn"); if(a) a.onclick=function(){ openItem(null); };
+  var cl=$("#cleanLegacyBtn"); if(cl) cl.onclick=function(){ if(!confirm("구버전 부품 코드를 현재 BOM 코드로 정리합니다.\n· 상·하판/뒷판/측판 → 같은 크기의 패널로 합산\n· 스토퍼 암, 수량 0 인 옛 품목 → 삭제\n이력 탭에 합산 기록이 남습니다. 진행할까요?")) return; cl.disabled=true; api({action:"cleanLegacyParts"}).then(function(r){ cl.disabled=false; if(!r.ok){ toast(r.message||"실패",true); return; } toast("정리 완료 — 합산 "+r.merged+" · 코드 변경 "+r.renamed+" · 삭제 "+r.deleted+(r.left&&r.left.length?" · 남김 "+r.left.length:"")); if(r.left&&r.left.length) setTimeout(function(){ alert("수량이 있어 자동으로 옮기지 못한 품목:\n"+r.left.join("\n")+"\n\n부품 탭에서 직접 수정하거나 입출고로 옮겨 주세요."); },300); load(); }); };
   var sb=$("#seedBomBtn"); if(sb) sb.onclick=function(){ if(!confirm("BOM에 나오는 부품을 색상별로 품목에 등록합니다 (이미 있는 코드는 건너뜀, 수량 0). 진행할까요?")) return; sb.disabled=true; api({action:"seedBomParts"}).then(function(r){ sb.disabled=false; if(r.ok){ toast(r.added+"개 부품을 등록했습니다"); load(); } else toast(r.message||"실패",true); }); };
   $$("[data-pmode]").forEach(function(b){ b.onclick=function(){ S.pmode=b.dataset.pmode; render(); }; });
   $$("[data-pcat]").forEach(function(b){ b.onclick=function(){ S.pcat=(S.pcat===b.dataset.pcat&&b.classList.contains("kpi"))?"전체":b.dataset.pcat; render(); }; });
@@ -586,7 +599,7 @@ function bind(){
   var lo=$("#logoutBtn"); if(lo) lo.onclick=logout;
   var pf=$("#pwForm"); if(pf) pf.onsubmit=function(e){ e.preventDefault(); if($("#pw1").value!==$("#pw2").value){toast("새 비밀번호가 서로 다릅니다",true);return;} api({action:"changePw",oldPw:$("#pw0").value,newPw:$("#pw1").value}).then(function(r){ if(r.ok){toast("비밀번호를 변경했습니다");pf.reset();} else toast(r.message||"실패",true); }); };
   var csv=$("#csvBtn"); if(csv) csv.onclick=exportCsv;
-  var sf=$("#setForm"); if(sf) sf.onsubmit=function(e){ e.preventDefault(); api({action:"setSettings",rate:$("#sRate").value,extraPct:$("#sExtra").value,wholesalePct:$("#sWs").value}).then(function(r){ if(!r.ok){toast(r.message||"저장 실패",true);return;} toast("설정을 저장했습니다"); load(); }); };
+  var sf=$("#setForm"); if(sf) sf.onsubmit=function(e){ e.preventDefault(); api({action:"setSettings",rate:$("#sRate").value,extraPct:$("#sExtra").value,wholesalePct:$("#sWs").value,usdCny:$("#sUsd").value}).then(function(r){ if(!r.ok){toast(r.message||"저장 실패",true);return;} toast("설정을 저장했습니다"); load(); }); };
   $$("[data-pcsave]").forEach(function(b){ b.onclick=function(){ var inp=$('[data-pcno="'+b.dataset.pcsave+'"]'); var v=inp?inp.value:""; if(v===""||isNaN(Number(v))){toast("단가를 입력하세요",true);return;} b.disabled=true; api({action:"setPartCost",code:b.dataset.pcsave,cny:Number(v)}).then(function(r){ b.disabled=false; if(!r.ok){toast(r.message||"저장 실패",true);return;} toast(b.dataset.pcsave+" 단가 저장"); load(); }); }; });
   $$("[data-wssave]").forEach(function(b){ b.onclick=function(){ var inp=$('[data-wsno="'+b.dataset.wssave+'"]'); var v=inp?inp.value:""; if(v!==""&&isNaN(Number(v))){toast("금액을 확인하세요",true);return;} b.disabled=true; api({action:"setWholesale",no:Number(b.dataset.wssave),wholesale:v===""?"":Number(v)}).then(function(r){ b.disabled=false; if(!r.ok){toast(r.message||"저장 실패",true);return;} toast("No"+b.dataset.wssave+" 도매가 "+(v===""?"자동 계산으로 되돌림":"저장")); load(); }); }; });
   $$("[data-pcno],[data-wsno]").forEach(function(i){ i.onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); var nb=i.parentNode.querySelector("button"); if(nb) nb.click(); } }; });
@@ -641,7 +654,7 @@ function openBom(no){
   modal('<h3>No'+no+' BOM <span style="font-weight:400;color:var(--muted);font-size:13px">1대당 부품 구성</span></h3><div class="sub">'+esc(prod?prod.name+' · '+prod.spec:"")+'</div>'
   +'<div class="cur"><div class="im"><img src="'+IMG(no)+'" alt="" onerror="this.style.display=\'none\'"></div><div style="font-size:12.5px">현재 재고 <b style="font-size:16px">'+(prod?prod.total:0)+'</b>대<br><span style="color:var(--muted)">'+(stockLine||"재고 없음")+'</span></div></div>'
   +'<div class="bomlist">'+(colored.length?'<div class="h">색상 부품 (제품 색상)</div>'+colored.map(li).join(""):'')+(common.length?'<div class="h">공통 부품 (크롬 · 유리 · 조명)</div>'+common.map(li).join(""):'')+(codes.length?'':'<div class="empty">BOM이 등록되지 않았습니다. 구글 시트 BOM 탭에 추가하세요.</div>')+'</div>'
-  +(bc&&codes.length?'<div class="cur" style="display:block;margin:14px 0 0"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>1대 원가 <b style="font-size:16px">'+fmtCny(bc.cny)+'</b> → <b style="font-size:16px">'+won(bc.krw)+'</b> <span class="s" style="color:var(--muted)">(환율 '+fmt(S.settings.rate)+'원'+(S.settings.extraPct?' · 부대비용 +'+S.settings.extraPct+'%':'')+')</span></span></div><div style="margin-top:6px;font-size:12.5px;color:var(--ink2)">판매가 '+(prod&&prod.price?won(prod.price)+' · 마진 '+mgTag(prod.price,bc.krw):"—")+' &nbsp;|&nbsp; 도매가 '+(prod&&prod.wholesale?won(prod.wholesale)+' · 마진 '+mgTag(prod.wholesale,bc.krw):"—")+'</div>'+(bc.missing.length?'<div style="margin-top:6px;font-size:12px;color:var(--bad)">단가 미입력 부품 '+bc.missing.length+'종 — 원가 · 설정 탭에서 입력하세요</div>':'')+'</div>':'')
+  +(bc&&codes.length?'<div class="cur" style="display:block;margin:14px 0 0"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>1대 원가 <b style="font-size:16px">'+fmtCny(bc.cny)+'</b> <span style="color:var(--muted)">('+fmtUsd(cnyUsd(bc.cny))+')</span> → <b style="font-size:16px">'+won(bc.krw)+'</b> <span class="s" style="color:var(--muted)">(환율 '+fmt(S.settings.rate)+'원'+(S.settings.extraPct?' · 부대비용 +'+S.settings.extraPct+'%':'')+')</span></span></div><div style="margin-top:6px;font-size:12.5px;color:var(--ink2)">판매가 '+(prod&&prod.price?won(prod.price)+' · 마진 '+mgTag(prod.price,bc.krw):"—")+' &nbsp;|&nbsp; 도매가 '+(prod&&prod.wholesale?won(prod.wholesale)+' · 마진 '+mgTag(prod.wholesale,bc.krw):"—")+'</div>'+(bc.missing.length?'<div style="margin-top:6px;font-size:12px;color:var(--bad)">단가 미입력 부품 '+bc.missing.length+'종 — 원가 · 설정 탭에서 입력하세요</div>':'')+'</div>':'')
   +(!isAdmin()&&prod&&prod.wholesale?'<div class="cur" style="margin:14px 0 0">도매가 <b style="font-size:16px">'+won(prod.wholesale)+'</b></div>':'')
   +'<div class="foot" style="margin-top:16px"><button class="btn ghost" type="button" onclick="this.closest(\'.ov\').remove()">닫기</button></div>');
 }
