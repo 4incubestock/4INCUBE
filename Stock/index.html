@@ -42,6 +42,7 @@ a{color:inherit}
 .btn.danger{background:#fff;color:var(--bad);border:1px solid #f1c3c3}.btn.danger:hover{background:#fff4f4}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 .err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+.remember{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin:2px 0 14px;cursor:pointer}.remember span{color:var(--muted);font-size:12px}.remember input{width:16px;height:16px;accent-color:var(--accent)}
 .demo-note{margin-top:16px;font-size:12px;color:var(--muted);line-height:1.6;border-top:1px dashed var(--line2);padding-top:12px}
 /* ---- app shell ---- */
 #app{min-height:100dvh;display:flex;flex-direction:column}
@@ -64,7 +65,7 @@ main{max-width:1240px;width:100%;margin:0 auto;padding:22px 20px 80px}
 .tools input,.tools select{height:36px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;background:#fff;outline:none}
 .tools input:focus,.tools select:focus{border-color:var(--ink)}
 .seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;background:#fff}
-.seg button{padding:0 12px;height:36px;color:var(--muted);font-weight:500}
+.seg button{padding:0 var(--pad,12px);height:36px;color:var(--muted);font-weight:500;white-space:nowrap}
 .seg button.on{background:var(--ink);color:#fff}
 /* ---- kpi ---- */
 .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
@@ -111,6 +112,15 @@ table.mx td.q.z button{color:#c9c3b8;font-weight:400}
 table.mx td.q.l button{color:var(--bad)}
 table.mx td.sum{font-weight:700;background:var(--surface2);min-width:60px}
 table.mx tr.total td{background:var(--surface2);font-weight:700;border-top:2px solid var(--line2)}
+table.mx.pm{min-width:900px}table.mx.pm td.q{height:50px;min-width:74px}table.mx.pm td.q button{font-size:14px;line-height:1.1;padding:4px 0}
+table.mx.pm td.q button small{display:block;font-size:10px;color:var(--muted);font-weight:400;margin-top:2px;letter-spacing:.02em}
+table.mx.pm td:first-child{min-width:150px}table.mx.pm td:first-child .ps{font-size:11px}
+table.mx.pm tr.grp td{background:var(--surface2);font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;height:28px;text-align:left;padding-left:12px}
+.pmhead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.pmhead h3{margin:0;gap:8px;justify-content:flex-start}.legend{font-size:11.5px;color:var(--muted)}.legend b{color:var(--ink2);font-weight:600}
+.bomlist{display:grid;grid-template-columns:1fr auto;gap:6px 14px;font-size:13px}.bomlist .h{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700;grid-column:1/-1;margin-top:8px}
+.bomlist .q{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}.bomlist .s{color:var(--muted);font-size:12px}
+.pc .t .bomb,.mx .bomb{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap}.pc .t .bomb:hover,.mx .bomb:hover{border-color:var(--ink);color:var(--ink)}
 /* ---- cards ---- */
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
 .pc{background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column}
@@ -155,6 +165,15 @@ table.t tr:hover td{background:#fcfaf6}
 .note{font-size:12px;color:var(--muted);margin-top:8px}
 @media (max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}.topin{padding:0 14px;gap:10px}.who{display:none}main{padding:16px 14px 80px}}
 @media (max-width:520px){.kpis{grid-template-columns:1fr 1fr}.kpi .v{font-size:22px}.cards{grid-template-columns:1fr 1fr}.pc .cs button{font-size:11px}}
+.cost{font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums}.cost b{color:var(--ink2)}
+.mg{font-weight:700}.mg.good{color:var(--ok)}.mg.bad{color:var(--bad)}
+.setform{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;align-items:end}.setform .field{margin:0}
+.inl{display:inline-flex;gap:6px;align-items:center}.inl input{width:118px;padding:6px 8px;font-size:13px;text-align:right}
+tr.nocost td{background:#fff8e8}
+table.t .pn{font-weight:700;display:block}table.t .ps{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}table.t .bomb{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;margin-left:6px;white-space:nowrap;background:#fff;cursor:pointer}
+table.t tr.total td{background:var(--surface2);font-weight:700;border-top:2px solid var(--line2)}
+.pmhead input{height:34px;border:1px solid var(--line2);border-radius:8px;padding:0 12px;background:#fff;outline:none}
+@media (max-width:700px){.setform{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -162,14 +181,15 @@ table.t tr:hover td{background:#fcfaf6}
 <!-- ================= LOGIN ================= -->
 <div id="login">
   <form class="card" id="loginForm" autocomplete="on">
-    <div class="wm">4INCUBE<small>INVENTORY · 재고관리</small></div>
+    <div class="wm">4INCUBE<small>STOCK · 재고관리</small></div>
     <h1>로그인</h1>
     <p class="sub">지급받은 아이디와 비밀번호를 입력하세요.</p>
     <div class="field"><label>아이디</label><input id="lid" name="username" autocomplete="username" required autofocus></div>
     <div class="field"><label>비밀번호</label><input id="lpw" name="password" type="password" autocomplete="current-password" required></div>
+    <label class="remember"><input type="checkbox" id="lremember" checked> 로그인 상태 유지 <span>(이 기기에서 30일)</span></label>
     <button class="btn w" type="submit" id="loginBtn">로그인</button>
     <div class="err" id="lerr"></div>
-    <div class="demo-note hidden" id="demoNote">데모 모드입니다. API_URL이 비어 있어 브라우저 안에서만 동작하고 저장되지 않습니다.<br>테스트 계정: <b>admin / 4incube1!</b></div>
+    <div class="demo-note hidden" id="demoNote">데모 모드입니다. API_URL이 비어 있어 브라우저 안에서만 동작하고 저장되지 않습니다.<br>테스트 계정: <b>admin / planfurni1!</b></div>
   </form>
 </div>
 
@@ -182,6 +202,7 @@ table.t tr:hover td{background:#fcfaf6}
       <button data-tab="fg">완제품</button>
       <button data-tab="parts">부품</button>
       <button data-tab="log">입출고 이력</button>
+      <button data-tab="cost" id="tabCost" class="hidden">원가 · 설정</button>
       <button data-tab="users" id="tabUsers" class="hidden">사용자</button>
       <button data-tab="me">내 계정</button>
     </nav>
@@ -198,8 +219,55 @@ table.t tr:hover td{background:#fcfaf6}
 /* ============================ 상수 ============================ */
 var COLOR_HEX = {"화이트":"#F1F0EB","블랙":"#131416","오렌지":"#EE6A22","노랑":"#EFB21A","스틸블루":"#0D3358","올리브그린":"#545D3C","분홍":"#EFA8BA","베이지":"#BDA279"};
 var LOW = 1; // 이 수량 이하면 "부족"
-var IMG = function(no){ return "img/no"+String(no).padStart(2,"0")+".jpg"; };
-var S = { token:null, user:null, colors:[], items:[], log:[], tab:"dash", fgView:"matrix", q:"", users:null };
+var COLOR_CODE = {"화이트":"WH","블랙":"BK","오렌지":"OR","노랑":"YE","스틸블루":"SB","올리브그린":"OG","분홍":"PK","베이지":"BG"};
+/* 기본 BOM (서버의 BOM 시트가 없거나 데모 모드일 때 사용). 실제 운영값은 구글 시트 "BOM" 탭에서 관리 */
+var PART_DEF = [ // 부품코드, 부품명, 규격, 색상구분(Y=제품 색상을 따름 / N=크롬·유리·조명 공통), 분류(도어/패널/악세사리)
+  ["DOOR-750x350", "도어", "750×350", "Y", "도어"], ["DOOR-500x350", "도어", "500×350", "Y", "도어"], ["DOOR-500x175", "도어", "500×175", "Y", "도어"],
+  ["PANEL-750x350", "패널", "750×350", "Y", "패널"], ["PANEL-750x500", "패널", "750×500", "Y", "패널"], ["PANEL-500x350", "패널", "500×350", "Y", "패널"], ["PANEL-500x500", "패널", "500×500", "Y", "패널"], ["PANEL-500x175", "패널", "500×175", "Y", "패널"], ["PANEL-350x350", "패널", "350×350", "Y", "패널"], ["PANEL-350x175", "패널", "350×175", "Y", "패널"], ["SIDEPANEL-350x350", "사이드패널", "350×350 (칸 사이 · 타공)", "Y", "패널"], ["SIDEPANEL-500x350", "사이드패널", "500×350 (칸 사이 · 타공)", "Y", "패널"], ["GLASSTOP-750x500", "유리 상판", "750×500", "N", "패널"],
+  ["HINGE", "도어 힌지", "도어당 2", "N", "악세사리"], ["EXPANDER", "확장 슬리브(膨胀管)", "튜브 양끝 · 튜브당 2", "N", "악세사리"], ["BRACKET", "코너 브라켓", "부채꼴 · 유리 상판 4개", "N", "악세사리"], ["HANDLE", "핸들", "도어당 1", "Y", "악세사리"], ["BALL", "볼조인트", "크롬", "N", "악세사리"], ["TUBE-750", "튜브", "750", "N", "악세사리"], ["TUBE-500", "튜브", "500", "N", "악세사리"], ["TUBE-350", "튜브", "350", "N", "악세사리"], ["TUBE-175", "튜브", "175", "N", "악세사리"], ["FOOT", "레벨링 풋", "크롬", "N", "악세사리"], ["GLASS-750x350", "유리", "750×350", "N", "악세사리"], ["GLASS-350x350", "유리", "350×350", "N", "악세사리"], ["LED", "LED 조명", "1칸용", "N", "악세사리"]
+];
+var BOM = { // 재고시스템 No → { 부품코드: 1대당 수량 }  (컨피규레이터 3D 모델에서 산출. 패널 = 상·하·후면·바깥 측면을 크기별로 합산, 사이드패널 = 칸 사이 타공 패널)
+  1: {"DOOR-750x350":2, "PANEL-750x350":8, "PANEL-350x350":2, "SIDEPANEL-350x350":1, "HINGE":4, "HANDLE":2, "BALL":18, "TUBE-750":12, "TUBE-350":21, "EXPANDER":66, "FOOT":6},
+  2: {"DOOR-750x350":2, "PANEL-750x350":8, "PANEL-350x350":2, "SIDEPANEL-350x350":1, "HINGE":4, "HANDLE":2, "BALL":18, "TUBE-750":12, "TUBE-350":15, "TUBE-175":6, "EXPANDER":66, "FOOT":6},
+  3: {"DOOR-750x350":4, "PANEL-750x350":12, "PANEL-350x350":4, "SIDEPANEL-350x350":2, "HINGE":8, "HANDLE":4, "BALL":24, "TUBE-750":16, "TUBE-350":24, "TUBE-175":6, "EXPANDER":92, "FOOT":6},
+  4: {"DOOR-750x350":4, "PANEL-750x350":10, "PANEL-350x350":4, "SIDEPANEL-350x350":2, "HINGE":8, "HANDLE":4, "BALL":18, "TUBE-750":12, "TUBE-350":21, "EXPANDER":66, "FOOT":6},
+  5: {"DOOR-750x350":3, "PANEL-750x350":12, "PANEL-350x350":2, "SIDEPANEL-350x350":2, "HINGE":6, "HANDLE":3, "BALL":24, "TUBE-750":18, "TUBE-350":28, "EXPANDER":92, "FOOT":8},
+  6: {"DOOR-750x350":3, "PANEL-750x350":7, "PANEL-350x350":6, "HINGE":6, "HANDLE":3, "BALL":16, "TUBE-750":8, "TUBE-350":20, "EXPANDER":56, "FOOT":4},
+  7: {"DOOR-750x350":1, "PANEL-750x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-750":6, "TUBE-350":14, "EXPANDER":40, "FOOT":4},
+  8: {"DOOR-750x350":2, "PANEL-750x350":6, "PANEL-350x350":4, "HINGE":4, "HANDLE":2, "BALL":16, "TUBE-750":8, "TUBE-350":16, "TUBE-175":4, "EXPANDER":56, "FOOT":4},
+  9: {"DOOR-750x350":3, "PANEL-750x350":12, "PANEL-350x350":2, "SIDEPANEL-350x350":2, "HINGE":6, "HANDLE":3, "BALL":24, "TUBE-750":18, "TUBE-350":20, "TUBE-175":8, "EXPANDER":92, "FOOT":8},
+  10: {"DOOR-750x350":3, "PANEL-750x350":9, "PANEL-350x350":2, "SIDEPANEL-350x350":2, "HINGE":6, "HANDLE":3, "BALL":16, "TUBE-750":12, "TUBE-350":16, "EXPANDER":56, "FOOT":8},
+  11: {"DOOR-500x175":1, "PANEL-500x350":3, "PANEL-500x175":1, "PANEL-350x175":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "EXPANDER":40, "FOOT":4},
+  12: {"DOOR-500x350":1, "PANEL-500x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "EXPANDER":40, "FOOT":4},
+  13: {"PANEL-750x500":1, "GLASSTOP-750x500":1, "BRACKET":4, "BALL":8, "TUBE-750":4, "TUBE-500":4, "TUBE-350":4, "EXPANDER":24, "FOOT":4},
+  14: {"DOOR-750x350":1, "PANEL-750x350":11, "PANEL-350x350":10, "HINGE":2, "HANDLE":1, "BALL":24, "TUBE-750":12, "TUBE-350":32, "EXPANDER":88, "FOOT":4},
+  15: {"DOOR-500x350":2, "PANEL-750x350":1, "PANEL-750x500":1, "PANEL-500x350":5, "PANEL-500x500":3, "SIDEPANEL-500x350":2, "HINGE":4, "HANDLE":2, "BALL":18, "TUBE-750":4, "TUBE-500":15, "TUBE-350":12, "EXPANDER":62, "FOOT":6},
+  16: {"DOOR-750x350":1, "PANEL-750x350":7, "PANEL-350x350":6, "HINGE":2, "HANDLE":1, "BALL":16, "TUBE-750":8, "TUBE-350":20, "EXPANDER":56, "FOOT":4},
+  17: {"DOOR-750x350":1, "PANEL-750x350":7, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":24, "TUBE-750":12, "TUBE-350":32, "EXPANDER":88, "FOOT":4, "GLASS-750x350":8, "GLASS-350x350":8, "LED":4},
+  18: {"DOOR-750x350":1, "PANEL-750x350":6, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":20, "TUBE-750":10, "TUBE-350":26, "EXPANDER":72, "FOOT":4, "GLASS-750x350":6, "GLASS-350x350":6, "LED":3},
+  19: {"DOOR-750x350":1, "PANEL-750x350":5, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":16, "TUBE-750":8, "TUBE-350":20, "EXPANDER":56, "FOOT":4, "GLASS-750x350":4, "GLASS-350x350":4, "LED":2},
+  20: {"DOOR-750x350":1, "PANEL-750x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-750":6, "TUBE-350":14, "EXPANDER":40, "FOOT":4, "GLASS-750x350":2, "GLASS-350x350":2, "LED":1},
+  21: {"DOOR-750x350":2, "PANEL-750x350":5, "PANEL-350x350":4, "HINGE":4, "HANDLE":2, "BALL":12, "TUBE-750":6, "TUBE-350":14, "EXPANDER":40, "FOOT":4},
+  22: {"DOOR-500x350":1, "PANEL-500x350":4, "PANEL-350x350":2, "HINGE":2, "HANDLE":1, "BALL":12, "TUBE-500":6, "TUBE-350":10, "TUBE-175":4, "EXPANDER":40, "FOOT":4}
+};
+var PART_COST = { // 중국 출고단가 (CNY, 1개 기준) — 견적서 模块配件报价 기준. 없는 부품은 0
+  "DOOR-750x350":81.8, "DOOR-500x350":51.3, "DOOR-500x175":42.6,
+  "PANEL-750x350":57.0, "PANEL-750x500":68.0, "PANEL-500x350":43.2, "PANEL-500x500":54.0, "PANEL-500x175":26.3, "PANEL-350x350":31.9, "PANEL-350x175":21.2,
+  "SIDEPANEL-350x350":31.9, "SIDEPANEL-500x350":43.2, "GLASSTOP-750x500":75.0,
+  "HINGE":59.0, "EXPANDER":1.8, "BRACKET":9.6, "HANDLE":34.0, "BALL":8.0,
+  "TUBE-750":22.0, "TUBE-500":14.2, "TUBE-350":11.0, "TUBE-175":6.7,
+  "FOOT":3.0, "GLASS-750x350":75.0, "GLASS-350x350":75.0, "LED":42.0
+};
+var PART_COST_NOTE = { // 견적서 명칭 매핑 메모
+  "HINGE":"铰链 59.0/개 (도어 1개 = 2개 = 118)", "EXPANDER":"膨胀管 — 튜브 양끝 삽입 슬리브, 튜브당 2개", "BALL":"铜球+电镀铬", "FOOT":"脚垫", "HANDLE":"把手", "BRACKET":"玻璃夹 (유리 상판 코너)",
+  "SIDEPANEL-500x350":"견적 없음 → PANEL-500x350 단가 적용(추정)", "GLASSTOP-750x500":"玻璃 75", "GLASS-750x350":"玻璃 75", "GLASS-350x350":"玻璃 75(추정)", "LED":"灯 42"
+};
+
+/* 이미지 파일은 컨피규레이터 번호(img/no01~no22). 재고시스템 No → 컨피규레이터 No: 재고1=컨피규2, 2=5, 3=6, 4=3, 5=7, 6=4, 7=1 */
+var IMG_MAP = {1:2, 2:5, 3:6, 4:3, 5:7, 6:4, 7:1};
+var IMG = function(no){ var f=IMG_MAP[no]||no; return "img/no"+String(f).padStart(2,"0")+".jpg"; };
+var APP_VERSION = "1.8";
+var S = { token:null, user:null, colors:[], items:[], log:[], parts:[], bom:{}, settings:null, partCost:null, costNotes:{}, serverVer:null, pcat:"전체", tab:"dash", fgView:"cards", pmode:"total", q:"", users:null };
 
 /* ============================ API ============================ */
 var DEMO = !API_URL;
@@ -207,6 +275,7 @@ function api(payload){
   if(DEMO) return demoApi(payload);
   return fetch(API_URL,{method:"POST",body:JSON.stringify(Object.assign({token:S.token},payload))})
     .then(function(r){ return r.json(); })
+    .then(function(r){ if(r&&r.error==="bad_action"&&!r.message) r.message="서버(Code.gs)가 구버전입니다. 새 Code.gs를 붙여넣고 배포 관리 → 새 버전으로 배포하세요."; return r; })
     .catch(function(e){ return {ok:false,error:"network",message:"서버에 연결할 수 없습니다. API_URL과 배포 설정을 확인하세요."}; });
 }
 /* ---- 데모 백엔드 (API_URL 비어 있을 때만) ---- */
@@ -214,24 +283,38 @@ var demoDB = null;
 function demoApi(p){
   if(!demoDB) demoDB = demoSeed();
   var r = (function(){
-    if(p.action==="login") return (p.id==="admin"&&p.pw==="4incube1!")||(p.id==="staff"&&p.pw==="123456") ? {ok:true,token:"demo",user:{id:p.id,name:p.id==="admin"?"관리자":"직원",role:p.id==="admin"?"admin":"staff"}} : {ok:false,message:"아이디 또는 비밀번호가 맞지 않습니다."};
-    if(p.action==="getAll") return {ok:true,colors:Object.keys(COLOR_HEX),items:JSON.parse(JSON.stringify(demoDB.items)),log:demoDB.log.slice().reverse(),updatedAt:new Date().toISOString()};
-    if(p.action==="move"){ var it=demoDB.items.find(function(x){return x.code===p.code}); if(!it) return {ok:false,message:"품목 없음"}; var b=it.qty,a=p.type==="입고"?b+Math.abs(p.qty):p.type==="출고"?b-Math.abs(p.qty):p.qty; if(a<0) return {ok:false,message:"재고가 부족합니다 (현재 "+b+")."}; it.qty=a; if(p.type==="입고"&&p.cost!==""&&p.cost!=null) it.cost=Number(p.cost); demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:it.code,type:p.type,before:b,after:a,delta:a-b,cost:p.cost||"",amount:p.cost?Math.abs(a-b)*p.cost:"",note:p.note||""}); return {ok:true,qty:a}; }
-    if(p.action==="upsertItem"){ var d=p.item, ex=demoDB.items.find(function(x){return x.code===d.code}); if(ex) Object.assign(ex,d,{qty:ex.qty}); else demoDB.items.push(Object.assign({qty:0},d)); return {ok:true}; }
+    if(p.action==="login") return (p.id==="admin"&&p.pw==="planfurni1!")||(p.id==="staff"&&p.pw==="123456") ? {ok:true,token:"demo",user:{id:p.id,name:p.id==="admin"?"관리자":"직원",role:p.id==="admin"?"admin":"staff"}} : {ok:false,message:"아이디 또는 비밀번호가 맞지 않습니다."};
+    if(p.action==="getAll"){ var adm=S.user&&S.user.role==="admin", st=demoDB.settings; var its=JSON.parse(JSON.stringify(demoDB.items)).map(function(it){ if(it.wholesale==null&&it.kind==="완제품"&&it.price&&st.wholesalePct){ it.wholesale=Math.round(it.price*st.wholesalePct/100/1000)*1000; it.wholesaleAuto=true; } if(!adm){ delete it.cost; delete it.price; } return it; });
+      var lg=demoDB.log.slice().reverse().map(function(r){ r=Object.assign({},r); if(!adm){ r.cost=""; r.amount=""; } return r; });
+      var res={ok:true,version:APP_VERSION,colors:Object.keys(COLOR_HEX),items:its,log:lg,parts:defaultParts(),bom:BOM,updatedAt:new Date().toISOString()}; if(adm){ res.settings=st; res.partCost=demoDB.partCost; res.costNotes=PART_COST_NOTE; } return res; }
+    if(p.action==="setSettings"){ ["rate","extraPct","wholesalePct"].forEach(function(k){ if(p[k]!==""&&p[k]!=null&&!isNaN(Number(p[k]))) demoDB.settings[k]=Number(p[k]); }); return {ok:true,settings:demoDB.settings}; }
+    if(p.action==="setPartCost"){ if(!p.code||isNaN(Number(p.cny))) return {ok:false,message:"단가를 확인하세요"}; demoDB.partCost[p.code]=Number(p.cny); return {ok:true}; }
+    if(p.action==="setWholesale"){ var wn=0; demoDB.items.forEach(function(it){ if(it.kind==="완제품"&&it.no===Number(p.no)){ it.wholesale=p.wholesale===""||p.wholesale==null?null:Number(p.wholesale); wn++; } }); return {ok:true,updated:wn}; }
+    if(p.action==="seedBomParts"){ var n=0; defaultParts().forEach(function(pt){ (pt.colored?Object.keys(COLOR_HEX):[""]).forEach(function(c){ var code="PT-"+pt.code+(c?"-"+COLOR_CODE[c]:""); if(!demoDB.items.some(function(x){return x.code===code})){ demoDB.items.push({code:code,kind:"부품",no:null,name:pt.name,color:c,spec:pt.spec,unit:"개",qty:0,cost:null,price:null,active:true,memo:c?"BOM 부품":"BOM 부품(공통)"}); n++; } }); }); return {ok:true,added:n}; }
+    if(p.action==="move"){ var it=demoDB.items.find(function(x){return x.code===p.code}); if(!it) return {ok:false,message:"품목 없음"}; var b=it.qty,a=p.type==="입고"?b+Math.abs(p.qty):p.type==="출고"?b-Math.abs(p.qty):p.qty; if(a<0) return {ok:false,message:"재고가 부족합니다 (현재 "+b+")."}; it.qty=a; if(p.type==="입고"&&p.cost!==""&&p.cost!=null&&S.user.role==="admin") it.cost=Number(p.cost); demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:it.code,type:p.type,before:b,after:a,delta:a-b,cost:p.cost||"",amount:p.cost?Math.abs(a-b)*p.cost:"",note:p.note||""}); return {ok:true,qty:a}; }
+    if(p.action==="disassemble"){ var fg=demoDB.items.find(function(x){return x.code===p.code}); if(!fg||fg.kind!=="완제품") return {ok:false,message:"완제품 품목 없음"}; var dq=parseInt(p.qty,10); if(!(dq>0)) return {ok:false,message:"분해 수량은 1 이상"}; if(fg.qty<dq) return {ok:false,message:"재고가 부족합니다 (현재 "+fg.qty+")."}; var bb=BOM[fg.no]; if(!bb) return {ok:false,message:"BOM 없음"}; var memo="No"+fg.no+" "+fg.color+" "+dq+"대 분해"; var b0=fg.qty; fg.qty-=dq; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:fg.code,type:"출고",before:b0,after:fg.qty,delta:-dq,cost:"",amount:"",note:"분해 → 부품"}); var cnt=0,cr=0;
+      defaultParts().forEach(function(pt){ var per=(bb[pt.code]||0)*dq; if(!per) return; cnt++; var pcode="PT-"+pt.code+(pt.colored?"-"+COLOR_CODE[fg.color]:""); var ex=demoDB.items.find(function(x){return x.code===pcode}); if(!ex){ ex={code:pcode,kind:"부품",no:null,name:pt.name,color:pt.colored?fg.color:"",spec:pt.spec,unit:"개",qty:0,cost:null,price:null,active:true,memo:"BOM 부품"}; demoDB.items.push(ex); cr++; } var e0=ex.qty; ex.qty+=per; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:ex.code,type:"입고",before:e0,after:ex.qty,delta:per,cost:"",amount:"",note:memo}); });
+      return {ok:true,qty:fg.qty,parts:cnt,created:cr}; }
+    if(p.action==="assemble"){ var fg2=demoDB.items.find(function(x){return x.code===p.code}); if(!fg2||fg2.kind!=="완제품") return {ok:false,message:"완제품 품목 없음"}; var aq=parseInt(p.qty,10); if(!(aq>0)) return {ok:false,message:"조립 수량은 1 이상"}; var bb2=BOM[fg2.no]; if(!bb2) return {ok:false,message:"BOM 없음"}; var plan=[],short=[];
+      defaultParts().forEach(function(pt){ var need=(bb2[pt.code]||0)*aq; if(!need) return; var pcode="PT-"+pt.code+(pt.colored?"-"+COLOR_CODE[fg2.color]:""); var ex=demoDB.items.find(function(x){return x.code===pcode}); var have=ex?ex.qty:0; if(have<need) short.push(pt.name+" "+pt.spec+(pt.colored?" "+fg2.color:"")+" (필요 "+need+" / 보유 "+have+")"); else plan.push({ex:ex,need:need}); });
+      if(short.length) return {ok:false,message:"부품이 부족합니다: "+short.join(", ")}; var memo2="No"+fg2.no+" "+fg2.color+" "+aq+"대 조립";
+      plan.forEach(function(x){ var e0=x.ex.qty; x.ex.qty-=x.need; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:x.ex.code,type:"출고",before:e0,after:x.ex.qty,delta:-x.need,cost:"",amount:"",note:memo2}); });
+      var f0=fg2.qty; fg2.qty+=aq; demoDB.log.push({at:new Date().toISOString(),by:S.user.id,code:fg2.code,type:"입고",before:f0,after:fg2.qty,delta:aq,cost:"",amount:"",note:"부품 → 조립"}); return {ok:true,qty:fg2.qty,parts:plan.length}; }
+    if(p.action==="upsertItem"){ var d=Object.assign({},p.item), ex=demoDB.items.find(function(x){return x.code===d.code}); ["cost","price","wholesale","no"].forEach(function(k){ d[k]=d[k]===""||d[k]==null?null:Number(d[k]); }); if(ex) Object.assign(ex,d,{qty:ex.qty}); else demoDB.items.push(Object.assign({qty:0},d,{qty:Number(d.qty)||0})); return {ok:true}; }
     if(p.action==="listUsers") return {ok:true,users:demoDB.users};
     if(p.action==="addUser"){ if(demoDB.users.some(function(u){return u.id===p.id})) return {ok:false,message:"이미 있는 아이디입니다."}; demoDB.users.push({id:p.id,name:p.name||p.id,role:p.role,since:new Date().toISOString().slice(0,10)}); return {ok:true}; }
     if(p.action==="removeUser"){ demoDB.users=demoDB.users.filter(function(u){return u.id!==p.id}); return {ok:true}; }
-    if(p.action==="resetPw"||p.action==="changePw") return {ok:true};
+    if(p.action==="resetPw"||p.action==="changePw"||p.action==="logout") return {ok:true};
     return {ok:false,message:"bad action"};
   })();
   return new Promise(function(res){ setTimeout(function(){res(r)},120); });
 }
 function demoSeed(){
-  var P=[[1,"도어 1 · 오픈 1 (1칸 2단)","773×373×740",890000],[2,"도어 2 · 오픈 2 (2칸 2단)","1523×373×740",1280000],[3,"도어 4 (2칸 2단)","1523×373×740",1730000],[4,"도어 3 (1칸 3단)","773×373×1090",1610000],[5,"오픈 2 · 도어 2 로우 (2칸)","1523×373×565",1280000],[6,"오픈 2 · 도어 4 (2칸 3단)","1523×373×915",2000000],[7,"오픈 3 · 도어 3 (3칸 2단)","2273×373×740",2000000],[8,"오픈 1 · 도어 2 (1칸 3단)","773×373×915",1250000],[9,"오픈 3 · 도어 3 로우 (3칸)","2273×373×565",1880000],[10,"도어 3 로우보드 (3칸 1단)","2273×373×390",1660000],[11,"도어 175 · 오픈 350 (500폭)","523×373×565",650000],[12,"오픈 175 · 도어 350 (500폭)","523×373×565",750000],[13,"오픈 테이블 (깊이 500)","773×523×395",580000],[14,"오픈박스 4 · 도어 1 (1칸 5단)","773×373×1790",1900000],[15,"모듈러 데스크 (깊이 500)","1273×523×740",1420000],[16,"오픈박스 2 · 도어 1 (1칸 3단)","773×373×1090",1420000],[17,"조명 유리 4 · 도어 1 (1칸 5단)","773×373×1790",5040000],[18,"조명 유리 3 · 도어 1 (1칸 4단)","773×373×1450",3960000],[19,"조명 유리 2 · 도어 1 (1칸 3단)","773×373×1090",2880000],[20,"조명 유리 1 · 도어 1 (1칸 2단)","773×373×740",1800000],[21,"도어 2 (1칸 2단)","773×373×740",1090000],[22,"도어 350 · 오픈 175 (500폭)","523×373×565",750000]];
+  var P=[[1,"도어 2 · 오픈 2 (2칸 2단)","1523×373×740",1280000],[2,"오픈 2 · 도어 2 로우 (2칸)","1523×373×565",1280000],[3,"오픈 2 · 도어 4 (2칸 3단)","1523×373×915",2150000],[4,"도어 4 (2칸 2단)","1523×373×740",2070000],[5,"오픈 3 · 도어 3 (3칸 2단)","2273×373×740",2000000],[6,"도어 3 (1칸 3단)","773×373×1090",1610000],[7,"도어 1 · 오픈 1 (1칸 2단)","773×373×740",890000],[8,"오픈 1 · 도어 2 (1칸 3단)","773×373×915",1250000],[9,"오픈 3 · 도어 3 로우 (3칸)","2273×373×565",1880000],[10,"도어 3 로우보드 (3칸 1단)","2273×373×390",1660000],[11,"도어 175 · 오픈 350 (500폭)","523×373×565",650000],[12,"오픈 175 · 도어 350 (500폭)","523×373×565",750000],[13,"유리 상판 테이블 (깊이 500)","773×523×395",580000],[14,"오픈박스 4 · 도어 1 (1칸 5단)","773×373×1790",1900000],[15,"모듈러 데스크 (깊이 500)","1273×523×740",1420000],[16,"오픈박스 2 · 도어 1 (1칸 3단)","773×373×1090",1420000],[17,"조명 유리 4 · 도어 1 (1칸 5단)","773×373×1790",5040000],[18,"조명 유리 3 · 도어 1 (1칸 4단)","773×373×1450",3960000],[19,"조명 유리 2 · 도어 1 (1칸 3단)","773×373×1090",2880000],[20,"조명 유리 1 · 도어 1 (1칸 2단)","773×373×740",1800000],[21,"도어 2 (1칸 2단)","773×373×740",1090000],[22,"도어 350 · 오픈 175 (500폭)","523×373×565",750000]];
   var SEED={1:[5,4,1,3,3,2,2,2],2:[5,8,3,5,1,3,3,2],3:[1,4,2,5,6,2,0,0],4:[0,3,1,4,1,2,0,1],5:[3,4,0,5,3,2,1,2],6:[0,3,0,5,3,2,0,1],7:[2,1,0,3,6,1,0,2],8:[0,3,0,2,2,3,1,1],9:[5,4,0,3,2,3,0,2],10:[5,6,0,4,4,1,0,2],11:[2,2,0,3,2,3,6,2],12:[2,4,1,9,5,5,4,0],13:[11,13,1,9,9,5,3,0],14:[1,0,0,1,0,0,1,1]};
   var CC={"화이트":"WH","블랙":"BK","오렌지":"OR","노랑":"YE","스틸블루":"SB","올리브그린":"OG","분홍":"PK","베이지":"BG"};
   var items=[]; P.forEach(function(p){ Object.keys(COLOR_HEX).forEach(function(c,j){ items.push({code:"FG-"+String(p[0]).padStart(2,"0")+"-"+CC[c],kind:"완제품",no:p[0],name:"No"+p[0]+" "+p[1],color:c,spec:p[2],unit:"대",qty:(SEED[p[0]]||[])[j]||0,cost:null,price:p[3],active:true,memo:""}); }); });
-  return {items:items,log:[],users:[{id:"admin",name:"관리자",role:"admin",since:"2026-09-29"},{id:"staff",name:"직원",role:"staff",since:"2026-09-29"}]};
+  return {items:items,log:[],users:[{id:"admin",name:"관리자",role:"admin",since:"2026-09-29"},{id:"staff",name:"직원",role:"staff",since:"2026-09-29"}],settings:{rate:200,extraPct:0,wholesalePct:60},partCost:JSON.parse(JSON.stringify(PART_COST))};
 }
 
 /* ============================ 유틸 ============================ */
@@ -245,15 +328,70 @@ var toastT; function toast(msg,bad){ var t=$(".toast"); if(t) t.remove(); t=docu
 function loading(on){ $("#loading").classList.toggle("hidden",!on); }
 function fgItems(){ return S.items.filter(function(i){return i.kind==="완제품"&&i.active}); }
 function partItems(){ return S.items.filter(function(i){return i.kind!=="완제품"&&i.active}); }
-function products(){ var m={}; fgItems().forEach(function(i){ var k=i.no; if(!m[k]) m[k]={no:i.no,name:i.name.replace(/^No\d+\s*/,""),spec:i.spec,price:i.price,cols:{},total:0}; m[k].cols[i.color]=i; m[k].total+=i.qty; }); return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){return a.no-b.no}); }
+function defaultParts(){ return PART_DEF.map(function(p){return {code:p[0],name:p[1],spec:p[2],colored:p[3]==="Y",cat:p[4]}}); }
+function catOf(code){ code=String(code||"").toUpperCase(); return code.indexOf("DOOR")===0?"도어":code.indexOf("PANEL")>=0?"패널":"악세사리"; }
+var CATS=["도어","패널","악세사리"];
+function normSpec(s){ return String(s||"").toLowerCase().replace(/[×x*\s]/g,"x").replace(/\(.*?\)/g,""); }
+/* 부품 품목 → BOM 부품 매칭. 코드 PT-<부품코드>[-<색상코드>] 가 우선, 아니면 품목명+규격이 같으면 매칭 */
+function matchPart(item){
+  var code=String(item.code||"").toUpperCase();
+  for(var i=0;i<S.parts.length;i++){ var p=S.parts[i], pc="PT-"+p.code.toUpperCase();
+    if(code===pc||(p.colored&&item.color&&code===pc+"-"+COLOR_CODE[item.color])) return p; }
+  for(var j=0;j<S.parts.length;j++){ var q=S.parts[j]; if(item.name&&item.name.trim()===q.name&&normSpec(item.spec)===normSpec(q.spec)) return q; }
+  return null;
+}
+/* 파츠별 재고 집계: 완제품 재고 × BOM + 부품 보유. 결과: [{part, cols:{색상:{bom,have,total,from:[{no,stock,per}],items:[]}}, common:{...}}] */
+function partStock(){
+  var ps=products(), cols=S.colors.slice(), uncolored=false;
+  var rows=S.parts.map(function(p){ var o={part:p,cols:{},common:{bom:0,have:0,total:0,from:[],items:[]}}; cols.forEach(function(c){ o.cols[c]={bom:0,have:0,total:0,from:[],items:[]}; }); return o; });
+  var byCode={}; rows.forEach(function(r){byCode[r.part.code]=r});
+  ps.forEach(function(prod){ var b=S.bom[prod.no]||S.bom[String(prod.no)]; if(!b) return;
+    Object.keys(b).forEach(function(code){ var r=byCode[code]; if(!r) return; var per=Number(b[code])||0; if(!per) return;
+      if(r.part.colored){ cols.forEach(function(c){ var it=prod.cols[c]; var st=it?it.qty:0; if(st>0){ r.cols[c].bom+=st*per; r.cols[c].from.push({no:prod.no,name:prod.name,color:c,stock:st,per:per}); } }); }
+      else { var st2=prod.total; if(st2>0){ r.common.bom+=st2*per; r.common.from.push({no:prod.no,name:prod.name,color:"",stock:st2,per:per}); } }
+    });
+  });
+  partItems().forEach(function(it){ var p=matchPart(it); if(!p) return; var r=byCode[p.code];
+    if(p.colored){ var c=it.color; if(!c||!r.cols[c]){ if(!r.cols["미지정"]){ cols.indexOf("미지정")<0&&cols.push("미지정"); rows.forEach(function(x){ if(!x.cols["미지정"]) x.cols["미지정"]={bom:0,have:0,total:0,from:[],items:[]}; }); uncolored=true; } c="미지정"; } r.cols[c].have+=it.qty; r.cols[c].items.push(it); }
+    else { r.common.have+=it.qty; r.common.items.push(it); }
+  });
+  rows.forEach(function(r){ Object.keys(r.cols).forEach(function(c){ r.cols[c].total=r.cols[c].bom+r.cols[c].have; }); r.common.total=r.common.bom+r.common.have; });
+  return {rows:rows,cols:cols,uncolored:uncolored};
+}
+function products(){ var m={}; fgItems().forEach(function(i){ var k=i.no; if(!m[k]) m[k]={no:i.no,name:i.name.replace(/^No\d+\s*/,""),spec:i.spec,price:i.price,wholesale:null,wholesaleAuto:false,cols:{},total:0,order:null}; m[k].cols[i.color]=i; if(i.wholesale!=null&&(m[k].wholesale==null||!i.wholesaleAuto)){ m[k].wholesale=i.wholesale; m[k].wholesaleAuto=!!i.wholesaleAuto; } m[k].total+=i.qty; if(i.order!=null&&(m[k].order==null||i.order<m[k].order)) m[k].order=i.order; });
+  // 정렬: 시트 M열 "표시순서"가 있으면 그 순서(작은 수부터), 없는 제품은 뒤로 No 순
+  return Object.keys(m).map(function(k){return m[k]}).sort(function(a,b){ var ao=a.order==null?1e9:a.order, bo=b.order==null?1e9:b.order; return ao-bo||a.no-b.no; }); }
+
+/* ============================ 원가 (관리자) ============================
+ * 수입단가(원) = CNY × 환율 × (1 + 부대비용률/100).  제품 원가 = Σ(BOM 수량 × 부품 CNY) 환산.  서버가 관리자에게만 settings/partCost 를 보내므로 직원 화면에서는 모두 null */
+function isAdmin(){ return !!(S.user&&S.user.role==="admin"); }
+function hasCost(){ return isAdmin()&&!!S.partCost&&!!S.settings; }
+function cnyKrw(cny){ var st=S.settings||{rate:200,extraPct:0}; return Math.round((Number(cny)||0)*st.rate*(1+(st.extraPct||0)/100)); }
+function partCny(code){ var v=S.partCost?S.partCost[code]:null; return v==null?0:Number(v)||0; }
+function partKrw(code){ return cnyKrw(partCny(code)); }
+function fmtCny(n){ return "¥"+(Math.round((Number(n)||0)*10)/10).toLocaleString("ko-KR",{minimumFractionDigits:1,maximumFractionDigits:1}); }
+/* 제품 1대 원가: {cny, krw, lines:[{code,qty,cny,krw}], missing:[부품코드]} */
+function bomCost(no){ var b=S.bom[no]||S.bom[String(no)]||{}, out={cny:0,krw:0,lines:[],missing:[]}; if(!hasCost()) return out;
+  S.parts.forEach(function(p){ var q=Number(b[p.code])||0; if(!q) return; var c=partCny(p.code); if(!c) out.missing.push(p.code); out.lines.push({code:p.code,qty:q,cny:c,krw:cnyKrw(c),sumCny:c*q,sumKrw:cnyKrw(c*q)}); out.cny+=c*q; }); out.krw=cnyKrw(out.cny); return out; }
+function marginPct(price,cost){ return price&&cost?Math.round((price-cost)/price*1000)/10:null; }
+function mgTag(price,cost){ var m=marginPct(price,cost); if(m==null) return "—"; return '<span class="mg '+(m>=30?"good":m<15?"bad":"")+'">'+m+'%</span>'; }
+/* 부품 품목 1개의 원화 단가: 매칭되는 BOM 부품의 CNY 환산 (품목에 직접 입력한 수입단가가 있으면 그것 우선) */
+function itemUnitCost(it){ if(!isAdmin()) return null; if(it.cost) return it.cost; if(it.kind==="완제품") return hasCost()?bomCost(it.no).krw||null:null; var p=matchPart(it); return p&&hasCost()?partKrw(p.code)||null:null; }
 
 /* ============================ 로그인 ============================ */
 $("#loginForm").addEventListener("submit",function(e){
   e.preventDefault(); var b=$("#loginBtn"); b.disabled=true; $("#lerr").textContent="";
-  api({action:"login",id:$("#lid").value.trim(),pw:$("#lpw").value}).then(function(r){
+  var remember=$("#lremember").checked, id=$("#lid").value.trim();
+  api({action:"login",id:id,pw:$("#lpw").value,remember:remember}).then(function(r){
     b.disabled=false;
     if(!r.ok){ $("#lerr").textContent=r.message||"로그인 실패"; return; }
-    S.token=r.token; S.user=r.user; try{ sessionStorage.setItem("pf_tok",r.token); sessionStorage.setItem("pf_user",JSON.stringify(r.user)); }catch(x){}
+    S.token=r.token; S.user=r.user;
+    try{
+      var store=remember?localStorage:sessionStorage;            // 유지 체크 시 localStorage(30일), 아니면 탭 닫으면 끝
+      store.setItem("pf_tok",r.token); store.setItem("pf_user",JSON.stringify(r.user));
+      (remember?sessionStorage:localStorage).removeItem("pf_tok"); (remember?sessionStorage:localStorage).removeItem("pf_user");
+      localStorage.setItem("pf_last_id",id);                       // 아이디는 항상 기억
+    }catch(x){}
     enterApp();
   });
 });
@@ -261,16 +399,22 @@ function enterApp(){
   $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
   $("#who").innerHTML="<b>"+esc(S.user.name||S.user.id)+"</b> · "+(S.user.role==="admin"?"관리자":"직원");
   $("#tabUsers").classList.toggle("hidden",S.user.role!=="admin");
+  $("#tabCost").classList.toggle("hidden",S.user.role!=="admin");
   $("#demoBadge").classList.toggle("hidden",!DEMO);
   load();
 }
-function logout(){ S.token=null; S.user=null; try{sessionStorage.clear()}catch(x){} $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); $("#lpw").value=""; }
+function logout(){ var t=S.token; S.token=null; S.user=null; if(t) api({action:"logout",token:t}); try{ ["pf_tok","pf_user"].forEach(function(k){ sessionStorage.removeItem(k); localStorage.removeItem(k); }); }catch(x){} $("#app").classList.add("hidden"); $("#login").classList.remove("hidden"); $("#lpw").value=""; }
 function load(){
   loading(true);
   return api({action:"getAll"}).then(function(r){
     loading(false);
     if(!r.ok){ if(r.error==="auth"){ toast("세션이 만료되었습니다. 다시 로그인하세요.",true); logout(); } else toast(r.message||"불러오기 실패",true); return; }
-    S.colors=r.colors; S.items=r.items; S.log=r.log; render();
+    S.colors=r.colors; S.items=r.items; S.log=r.log; var legacyBom=!!(r.parts&&r.parts.some(function(p){ return /^(STAY|HPANEL|BACK-|SIDE-)/i.test(p.code); }));
+    if(r.parts&&r.parts.length&&!legacyBom){ S.parts=r.parts.map(function(p){ if(!p.cat) p.cat=catOf(p.code); return p; }); S.bom=r.bom||BOM; } else { S.parts=defaultParts(); S.bom=BOM; }
+    S.settings=r.settings||null; S.partCost=r.partCost||null; S.costNotes=r.costNotes||{};
+    S.serverVer=r.version||null; render();
+    if(legacyBom) toast("서버의 BOM이 구버전이라 화면에 내장된 BOM으로 표시합니다. 새 Code.gs를 새 버전으로 배포하면 자동으로 정리됩니다.",true);
+    if(!DEMO&&S.serverVer!==APP_VERSION) toast("서버(Code.gs) 버전이 "+(S.serverVer||"구버전")+"입니다. 화면은 v"+APP_VERSION+" — 배포 관리에서 새 버전으로 배포하세요.",true);
   });
 }
 $("#refreshBtn").addEventListener("click",function(){ load().then(function(){toast("새로고침 완료")}); });
@@ -283,6 +427,7 @@ function render(){
   else if(S.tab==="fg") m.innerHTML=viewFG();
   else if(S.tab==="parts") m.innerHTML=viewParts();
   else if(S.tab==="log") m.innerHTML=viewLog();
+  else if(S.tab==="cost") m.innerHTML=isAdmin()?viewCost():viewDash();
   else if(S.tab==="users") { m.innerHTML=viewUsers(); loadUsers(); }
   else if(S.tab==="me") m.innerHTML=viewMe();
   bind();
@@ -291,8 +436,10 @@ function viewDash(){
   var ps=products(), all=S.items.filter(function(i){return i.active});
   var totalQty=fgItems().reduce(function(s,i){return s+i.qty},0);
   var partQty=partItems().reduce(function(s,i){return s+i.qty},0);
+  var admin=isAdmin();
   var saleVal=all.reduce(function(s,i){return s+i.qty*(i.price||0)},0);
-  var costVal=all.reduce(function(s,i){return s+i.qty*(i.cost||0)},0), costKnown=all.some(function(i){return i.cost});
+  var wsVal=fgItems().reduce(function(s,i){return s+i.qty*(i.wholesale||0)},0);
+  var costVal=all.reduce(function(s,i){return s+i.qty*(itemUnitCost(i)||0)},0), costKnown=admin&&costVal>0;
   var stocked={}; ps.forEach(function(p){ if(p.total>0) stocked[p.no]=true; }); var noStock=ps.filter(function(p){return p.total===0});
   var zero=fgItems().filter(function(i){return stocked[i.no]&&i.qty===0}).length, low=fgItems().filter(function(i){return i.qty>0&&i.qty<=LOW}).length;
   var maxP=Math.max.apply(null,ps.map(function(p){return p.total}).concat([1]));
@@ -300,11 +447,12 @@ function viewDash(){
   var lows=fgItems().filter(function(i){return stocked[i.no]&&i.qty<=LOW}).sort(function(a,b){return a.qty-b.qty||a.no-b.no});
   var recent=S.log.slice(0,8);
   return '<div class="sec-h"><div><div class="eyebrow">DASHBOARD</div><h2>재고 현황 요약</h2></div><div class="tools"><span class="note">기준: '+dt(new Date().toISOString())+'</span></div></div>'
-  +'<div class="kpis">'
+  +'<div class="kpis"'+(admin?'':' style="grid-template-columns:repeat(4,1fr)"')+'>'
   +'<div class="kpi"><div class="l">완제품 총 재고</div><div class="v">'+fmt(totalQty)+'<small>대</small></div><div class="s">'+ps.filter(function(p){return p.total>0}).length+'개 제품 · '+fgItems().filter(function(i){return i.qty>0}).length+'개 색상조합</div></div>'
   +'<div class="kpi"><div class="l">부품 재고</div><div class="v">'+fmt(partQty)+'<small>개</small></div><div class="s">'+partItems().length+'개 품목 등록</div></div>'
-  +'<div class="kpi"><div class="l">재고 판매가액</div><div class="v" style="font-size:22px">'+won(saleVal)+'</div><div class="s">판매가 × 수량</div></div>'
-  +'<div class="kpi"><div class="l">재고 원가액</div><div class="v" style="font-size:22px">'+(costKnown?won(costVal):"—")+'</div><div class="s">'+(costKnown?"수입단가 × 수량":"입고 시 단가를 입력하면 계산됩니다")+'</div></div>'
+  +(admin?'<div class="kpi"><div class="l">재고 판매가액</div><div class="v" style="font-size:22px">'+won(saleVal)+'</div><div class="s">판매가 × 수량 · 도매가 기준 '+won(wsVal)+'</div></div>'
+  +'<div class="kpi"><div class="l">재고 원가액</div><div class="v" style="font-size:22px">'+(costKnown?won(costVal):"—")+'</div><div class="s">'+(costKnown?"BOM × CNY 단가 × 환율 "+fmt((S.settings||{}).rate||0)+"원 · 예상 마진 "+(saleVal?Math.round((saleVal-costVal)/saleVal*100):0)+"%":"원가 · 설정 탭에서 부품 단가를 입력하면 계산됩니다")+'</div></div>'
+  :'<div class="kpi"><div class="l">재고 도매가액</div><div class="v" style="font-size:22px">'+won(wsVal)+'</div><div class="s">도매가 × 완제품 수량</div></div>')
   +'<div class="kpi'+(zero+low?" warn":"")+'"><div class="l">품절 · 부족</div><div class="v">'+zero+'<small>품절</small> <span style="font-size:18px;color:var(--muted)">/</span> '+low+'<small>부족</small></div><div class="s">재고 있는 제품 기준 · 부족 = '+LOW+'개 이하</div></div>'
   +'</div>'
   +'<div class="grid2"><div class="panel"><h3>제품별 재고 <span>완제품 · 색상 합계</span></h3><div class="bars">'
@@ -314,7 +462,28 @@ function viewDash(){
   +'</div><h3 style="margin-top:18px">품절 · 부족 항목 <span>'+lows.length+'건</span></h3><div class="lowlist">'
   + (lows.length? lows.map(function(i){ return '<button class="chip '+(i.qty===0?"zero":"low")+'" data-move="'+esc(i.code)+'"><span class="sw" style="--c:'+COLOR_HEX[i.color]+'"></span>No'+i.no+' '+esc(i.color)+' <b>'+i.qty+'</b></button>'; }).join("") : '<div class="empty">없음</div>')
   +'</div>'+(noStock.length?'<p class="note">재고 없는 제품: '+noStock.map(function(p){return "No"+p.no}).join(", ")+' (품절 집계에서 제외)</p>':'')+'</div></div>'
+  + partsPanel()
   +'<div class="panel"><h3>최근 입출고 <span>최근 8건</span></h3>'+ (recent.length? logTable(recent) : '<div class="empty">아직 기록이 없습니다. 완제품 탭에서 수량을 눌러 입고·출고를 기록하세요.</div>') +'</div>';
+}
+/* 대시보드: 색상별 파츠 재고 = 완제품 BOM 환산 + 부품 보유 */
+function partsPanel(cat,opts){
+  opts=opts||{}; var st=partStock(), mode=S.pmode, cols=st.cols;
+  var rowsAll=st.rows.filter(function(r){ return !cat||cat==="전체"||r.part.cat===cat; });
+  var colored=rowsAll.filter(function(r){return r.part.colored}), common=rowsAll.filter(function(r){return !r.part.colored});
+  function val(x){ return mode==="bom"?x.bom:mode==="have"?x.have:x.total; }
+  function cell(x,code,color){ var v=val(x); return '<td class="q'+(v===0?" z":"")+'"><button data-part="'+esc(code)+'" data-pcolor="'+esc(color)+'" title="상세">'+fmt(v)+(mode==="total"&&v?'<small>B '+fmt(x.bom)+' · P '+fmt(x.have)+'</small>':'')+'</button></td>'; }
+  var groups=[], gmap={}; colored.forEach(function(r){ var g=r.part.name; if(!gmap[g]){gmap[g]=[];groups.push(g);} gmap[g].push(r); });
+  var ctot={}; cols.forEach(function(c){ctot[c]=0}); var grand=0;
+  var body=groups.map(function(g){ var rs=gmap[g]; return (groups.length>1?'<tr class="grp"><td colspan="'+(cols.length+2)+'">'+esc(g)+'</td></tr>':'')+rs.map(function(r){ var sum=0; var tds=cols.map(function(c){ var x=r.cols[c]; sum+=val(x); ctot[c]+=val(x); return cell(x,r.part.code,c); }).join(""); grand+=sum; return '<tr><td><span class="pn">'+esc(r.part.name)+'</span><span class="ps">'+esc(r.part.spec)+' · '+esc(r.part.code)+'</span></td>'+tds+'<td class="sum">'+fmt(sum)+'</td></tr>'; }).join(""); }).join("");
+  var commonRows=common.map(function(r){ var x=r.common; return '<tr><td><span class="pn">'+esc(r.part.name)+'</span><span class="ps">'+esc(r.part.spec)+' · '+esc(r.part.code)+'</span></td><td class="q'+(x.bom?"":" z")+'"><button data-part="'+esc(r.part.code)+'" data-pcolor="">'+fmt(x.bom)+'</button></td><td class="q'+(x.have?"":" z")+'"><button data-part="'+esc(r.part.code)+'" data-pcolor="">'+fmt(x.have)+'</button></td><td class="sum">'+fmt(x.total)+'</td></tr>'; }).join("");
+  var segs='<div class="seg"><button data-pmode="total" class="'+(mode==="total"?"on":"")+'">합계</button><button data-pmode="bom" class="'+(mode==="bom"?"on":"")+'">완제품 BOM 환산</button><button data-pmode="have" class="'+(mode==="have"?"on":"")+'">부품 보유</button></div>';
+  var colorTable=colored.length?'<div class="tablewrap"><table class="mx pm"><thead><tr><th>부품</th>'+cols.map(function(c){return '<th>'+(COLOR_HEX[c]?'<span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>':'')+esc(c)+'</th>'}).join("")+'<th>합계</th></tr></thead><tbody>'+body
+  +'<tr class="total"><td>합계</td>'+cols.map(function(c){return '<td>'+fmt(ctot[c])+'</td>'}).join("")+'<td class="sum">'+fmt(grand)+'</td></tr></tbody></table></div>':'';
+  var commonTable=common.length?'<h3 style="margin:'+(colored.length?'18px':'0')+' 0 10px">공통 부품 <span>크롬 프레임 · 유리 · 조명 (색상 무관)</span></h3><div class="tablewrap"><table class="mx pm" style="min-width:520px"><thead><tr><th>부품</th><th>완제품 BOM 환산</th><th>부품 보유</th><th>합계</th></tr></thead><tbody>'+commonRows+'</tbody></table></div>':'';
+  return '<div class="panel" style="margin-bottom:14px"><div class="pmhead"><h3>'+(opts.title||'색상별 파츠 재고')+' <span>'+(opts.sub||'완제품을 분해했을 때 확보 가능한 부품 수량')+'</span></h3>'+segs+'</div>'
+  +'<div class="legend" style="margin-bottom:10px"><b>합계</b> = 완제품 재고 × 1대당 BOM 수량 (<b>B</b>) + 부품 탭에 등록된 보유 수량 (<b>P</b>). 숫자를 누르면 어떤 제품에서 나오는지 볼 수 있습니다.</div>'
+  +colorTable+commonTable
+  +(opts.compact?'':'<p class="note">BOM(1대당 부품 구성)은 구글 시트 "BOM" 탭에서 수정할 수 있고, 완제품 카드의 BOM 버튼으로 제품별 구성을 확인할 수 있습니다. 완제품을 실제로 분해했을 때는 완제품 수량을 눌러 "분해 →부품", 부품으로 조립했을 때는 "조립 ←부품"을 기록하면 부품 재고와 완제품 재고가 함께 움직입니다. 수입 컨테이너로 들어온 완제품은 그냥 "입고"를 쓰세요 (부품 차감 없음).</p>')+'</div>';
 }
 function viewFG(){
   var ps=products(); var q=S.q.trim().toLowerCase();
@@ -322,23 +491,35 @@ function viewFG(){
   var head='<div class="sec-h"><div><div class="eyebrow">FINISHED GOODS</div><h2>완제품 재고</h2></div><div class="tools"><input id="fgq" placeholder="검색 (No, 이름, 크기)" value="'+esc(S.q)+'"><div class="seg"><button data-view="matrix" class="'+(S.fgView==="matrix"?"on":"")+'">표</button><button data-view="cards" class="'+(S.fgView==="cards"?"on":"")+'">카드</button></div></div></div>';
   if(S.fgView==="matrix"){
     var tot={}; S.colors.forEach(function(c){tot[c]=0});
-    var rows=ps.map(function(p){ return '<tr><td><span class="pn">No'+p.no+'</span><span class="ps">'+esc(p.name)+' · '+esc(p.spec)+'</span></td>'+S.colors.map(function(c){ var it=p.cols[c]; var qn=it?it.qty:0; tot[c]+=qn; return '<td class="q'+(qn===0?" z":qn<=LOW?" l":"")+'"><button data-move="'+esc(it?it.code:"")+'" title="No'+p.no+' '+esc(c)+' 입출고">'+qn+'</button></td>'; }).join("")+'<td class="sum">'+p.total+'</td></tr>'; }).join("");
+    var rows=ps.map(function(p){ return '<tr><td><span class="pn">No'+p.no+'<button class="bomb" data-bom="'+p.no+'">BOM</button></span><span class="ps">'+esc(p.name)+' · '+esc(p.spec)+'</span></td>'+S.colors.map(function(c){ var it=p.cols[c]; var qn=it?it.qty:0; tot[c]+=qn; return '<td class="q'+(qn===0?" z":qn<=LOW?" l":"")+'"><button data-move="'+esc(it?it.code:"")+'" title="No'+p.no+' '+esc(c)+' 입출고">'+qn+'</button></td>'; }).join("")+'<td class="sum">'+p.total+'</td></tr>'; }).join("");
     var grand=S.colors.reduce(function(s,c){return s+tot[c]},0);
     return head+'<div class="tablewrap"><table class="mx"><thead><tr><th>제품</th>'+S.colors.map(function(c){return '<th><span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>'+esc(c)+'</th>'}).join("")+'<th>합계</th></tr></thead><tbody>'+rows+'<tr class="total"><td>합계</td>'+S.colors.map(function(c){return '<td>'+tot[c]+'</td>'}).join("")+'<td class="sum">'+grand+'</td></tr></tbody></table></div><p class="note">숫자를 누르면 입고 · 출고 · 조정을 기록할 수 있습니다. 빨간 숫자는 '+LOW+'개 이하, 회색 0은 품절입니다.</p>';
   }
-  return head+'<div class="cards">'+ps.map(function(p){ return '<div class="pc"><div class="im"><img src="'+IMG(p.no)+'" alt="No'+p.no+'" loading="lazy" onerror="this.style.opacity=.15"></div><div class="b"><div class="t"><b>No'+p.no+'</b><span>총 '+p.total+'대 · '+won(p.price||0)+'</span></div><div class="nm">'+esc(p.name)+' · '+esc(p.spec)+'</div><div class="cs">'+S.colors.map(function(c){ var it=p.cols[c]; var qn=it?it.qty:0; return '<button class="'+(qn===0?"z":"")+'" data-move="'+esc(it?it.code:"")+'"><span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>'+esc(c)+' <b>'+qn+'</b></button>'; }).join("")+'</div></div></div>'; }).join("")+'</div>';
+  return head+'<div class="cards">'+ps.map(function(p){ return '<div class="pc"><div class="im"><img src="'+IMG(p.no)+'" alt="No'+p.no+'" loading="lazy" onerror="this.style.opacity=.15"></div><div class="b"><div class="t"><b>No'+p.no+'<button class="bomb" data-bom="'+p.no+'">BOM</button></b><span>총 '+p.total+'대'+(isAdmin()?' · '+(p.price?won(p.price):'<span style="color:var(--muted)">판매가 미정</span>'):p.wholesale?' · 도매 '+won(p.wholesale):'')+'</span></div>'+(isAdmin()?(function(){ var bc=hasCost()?bomCost(p.no):null; return '<div class="cost">도매 <b>'+(p.wholesale?won(p.wholesale):"—")+'</b>'+(bc&&bc.krw?' · 원가 <b>'+won(bc.krw)+'</b> · 마진 '+mgTag(p.price,bc.krw):'')+'</div>'; })():'')+'<div class="nm">'+esc(p.name)+' · '+esc(p.spec)+'</div><div class="cs">'+S.colors.map(function(c){ var it=p.cols[c]; var qn=it?it.qty:0; return '<button class="'+(qn===0?"z":"")+'" data-move="'+esc(it?it.code:"")+'"><span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>'+esc(c)+' <b>'+qn+'</b></button>'; }).join("")+'</div></div></div>'; }).join("")+'</div>';
 }
 function viewParts(){
-  var items=partItems(); var q=S.q.trim().toLowerCase(); if(q) items=items.filter(function(i){return (i.code+" "+i.name+" "+i.color+" "+i.spec).toLowerCase().indexOf(q)>=0});
-  var admin=S.user.role==="admin";
-  return '<div class="sec-h"><div><div class="eyebrow">PARTS</div><h2>부품 재고</h2></div><div class="tools"><input id="fgq" placeholder="검색 (코드, 이름, 색상)" value="'+esc(S.q)+'">'+(admin?'<button class="btn accent sm" id="addItemBtn">+ 부품 등록</button>':'')+'</div></div>'
-  +'<div class="tablewrap"><table class="t"><thead><tr><th>코드</th><th>품목명</th><th>색상</th><th>규격</th><th class="num">현재수량</th><th class="num">수입단가</th><th class="num">재고원가</th><th></th></tr></thead><tbody>'
-  +(items.length? items.map(function(i){ return '<tr><td><code>'+esc(i.code)+'</code></td><td>'+esc(i.name)+'</td><td>'+(i.color?'<span class="sw" style="--c:'+(COLOR_HEX[i.color]||"#ccc")+'"></span>'+esc(i.color):"—")+'</td><td>'+esc(i.spec||"—")+'</td><td class="num"><b>'+fmt(i.qty)+'</b> '+esc(i.unit)+'</td><td class="num">'+(i.cost?won(i.cost):"—")+'</td><td class="num">'+(i.cost?won(i.cost*i.qty):"—")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-move="'+esc(i.code)+'">입출고</button>'+(admin?' <button class="btn ghost sm" data-edit="'+esc(i.code)+'">수정</button>':'')+'</td></tr>'; }).join("") : '<tr><td colspan="8"><div class="empty">등록된 부품이 없습니다. '+(admin?'오른쪽 위 "부품 등록"으로 도어·판넬·볼조인트 같은 부품을 추가하면 완제품과 같은 방식으로 입고·출고를 기록할 수 있습니다.':'관리자가 부품을 등록하면 여기에 표시됩니다.')+'</div></td></tr>')
-  +'</tbody></table></div><p class="note">부품은 코드 앞에 PT- 를 붙이는 것을 권장합니다 (예: PT-DOOR750-WH). 입고 시 단가를 입력하면 재고원가와 손익 계산에 쓰입니다.</p>';
+  var admin=S.user.role==="admin", cat=S.pcat, st=partStock();
+  var q=S.q.trim().toLowerCase();
+  var items=partItems().map(function(i){ var p=matchPart(i); return {it:i,part:p,cat:p?p.cat:"기타"}; });
+  if(cat!=="전체") items=items.filter(function(x){return x.cat===cat});
+  if(q) items=items.filter(function(x){var i=x.it; return (i.code+" "+i.name+" "+i.color+" "+i.spec).toLowerCase().indexOf(q)>=0});
+  // 분류별 요약: BOM 환산 / 보유 / 합계
+  var sum={}; CATS.forEach(function(c){sum[c]={bom:0,have:0}});
+  st.rows.forEach(function(r){ var c=sum[r.part.cat]||sum["악세사리"]; if(r.part.colored) Object.keys(r.cols).forEach(function(k){ c.bom+=r.cols[k].bom; c.have+=r.cols[k].have; }); else { c.bom+=r.common.bom; c.have+=r.common.have; } });
+  var kpis='<div class="kpis" style="grid-template-columns:repeat(3,1fr)">'+CATS.map(function(c){ var x=sum[c]; return '<div class="kpi" style="cursor:pointer'+(cat===c?';border-color:var(--ink)':'')+'" data-pcat="'+c+'"><div class="l">'+c+'</div><div class="v">'+fmt(x.bom+x.have)+'<small>개</small></div><div class="s">BOM 환산 '+fmt(x.bom)+' · 보유 '+fmt(x.have)+'</div></div>'; }).join("")+'</div>';
+  var seg='<div class="seg">'+["전체"].concat(CATS).map(function(c){return '<button data-pcat="'+c+'" class="'+(cat===c?"on":"")+'">'+c+'</button>'}).join("")+'</div>';
+  return '<div class="sec-h"><div><div class="eyebrow">PARTS</div><h2>부품 재고</h2></div><div class="tools">'+seg+'<input id="fgq" placeholder="검색 (코드, 이름, 색상)" value="'+esc(S.q)+'">'+(admin?'<button class="btn ghost sm" id="seedBomBtn" title="BOM에 나오는 부품을 색상별로 한 번에 등록 (수량 0)">BOM 부품 일괄 등록</button><button class="btn accent sm" id="addItemBtn">+ 부품 등록</button>':'')+'</div></div>'
+  +kpis
+  +partsPanel(cat,{compact:true,title:(cat==="전체"?"파츠 요약":cat+" 요약"),sub:"완제품 BOM 환산 + 부품 보유"})
+  +'<h3 style="font-size:14px;font-weight:700;margin:6px 0 10px">등록된 부품 품목 <span style="font-size:12px;color:var(--muted);font-weight:500">'+(cat==="전체"?"전체":cat)+' · '+items.length+'건</span></h3>'
+  +'<div class="tablewrap"><table class="t"><thead><tr><th>코드</th><th>분류</th><th>품목명</th><th>색상</th><th>규격</th><th class="num">현재수량</th>'+(admin?'<th class="num">CNY 단가</th><th class="num">수입단가(원)</th><th class="num">재고원가</th>':'')+'<th></th></tr></thead><tbody>'
+  +(items.length? items.map(function(x){ var i=x.it; return '<tr><td><code>'+esc(i.code)+'</code></td><td><span class="tag">'+esc(x.cat)+'</span></td><td>'+esc(i.name)+'</td><td>'+(i.color?'<span class="sw" style="--c:'+(COLOR_HEX[i.color]||"#ccc")+'"></span>'+esc(i.color):"—")+'</td><td>'+esc(i.spec||"—")+'</td><td class="num"><b>'+fmt(i.qty)+'</b> '+esc(i.unit)+'</td>'+(admin?(function(){ var uc=itemUnitCost(i), cn=x.part?partCny(x.part.code):0; return '<td class="num">'+(cn?fmtCny(cn):"—")+'</td><td class="num">'+(uc?won(uc)+(i.cost?'<small style="color:var(--muted)"> 직접입력</small>':''):"—")+'</td><td class="num">'+(uc?won(uc*i.qty):"—")+'</td>'; })():'')+'<td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-move="'+esc(i.code)+'">입출고</button>'+(admin?' <button class="btn ghost sm" data-edit="'+esc(i.code)+'">수정</button>':'')+'</td></tr>'; }).join("") : '<tr><td colspan="'+(admin?10:7)+'"><div class="empty">'+(partItems().length?'이 분류에 등록된 부품이 없습니다.':'등록된 부품이 없습니다. '+(admin?'"BOM 부품 일괄 등록"을 누르면 도어·패널·악세사리가 색상별로 한 번에 등록되고, 완제품을 분해하면 자동으로 여기에 들어옵니다.':'관리자가 부품을 등록하면 여기에 표시됩니다.'))+'</div></td></tr>')
+  +'</tbody></table></div><p class="note">코드가 PT-&lt;BOM 부품코드&gt;-&lt;색상코드&gt; (예: PT-DOOR-750x350-WH, 공통 부품은 PT-BALL) 이거나 품목명·규격이 BOM과 같으면 위 요약의 보유 수량(P)에 자동으로 합산되고 분류가 붙습니다.'+(admin?' 수입단가(원)는 "원가 · 설정" 탭의 CNY 단가 × 환율로 계산되며, 입고 때 단가를 직접 입력한 품목은 그 값을 우선합니다.':'')+'</p>';
 }
 function logTable(rows){
   var byCode={}; S.items.forEach(function(i){byCode[i.code]=i});
-  return '<div class="tablewrap"><table class="t"><thead><tr><th>일시</th><th>담당</th><th>품목</th><th>유형</th><th class="num">변경</th><th class="num">단가</th><th class="num">금액</th><th>메모</th></tr></thead><tbody>'+rows.map(function(r){ var it=byCode[r.code]; var nm=it?(it.kind==="완제품"?"No"+it.no+" "+it.color:it.name+(it.color?" "+it.color:"")):r.code; var cls=r.type==="입고"?"in":r.type==="출고"?"out":"adj"; return '<tr><td style="white-space:nowrap">'+dt(r.at)+'</td><td>'+esc(r.by)+'</td><td>'+esc(nm)+'</td><td><span class="tag '+cls+'">'+esc(r.type)+'</span></td><td class="num">'+r.before+' → <b>'+r.after+'</b> <span style="color:var(--muted)">('+(r.delta>0?"+":"")+r.delta+')</span></td><td class="num">'+(r.cost!==""&&r.cost!=null?won(r.cost):"—")+'</td><td class="num">'+(r.amount!==""&&r.amount!=null?won(r.amount):"—")+'</td><td style="color:var(--ink2)">'+esc(r.note||"")+'</td></tr>'; }).join("")+'</tbody></table></div>';
+  var adm=isAdmin();
+  return '<div class="tablewrap"><table class="t"><thead><tr><th>일시</th><th>담당</th><th>품목</th><th>유형</th><th class="num">변경</th>'+(adm?'<th class="num">단가</th><th class="num">금액</th>':'')+'<th>메모</th></tr></thead><tbody>'+rows.map(function(r){ var it=byCode[r.code]; var nm=it?(it.kind==="완제품"?"No"+it.no+" "+it.color:it.name+(it.color?" "+it.color:"")):r.code; var cls=r.type==="입고"?"in":r.type==="출고"?"out":"adj"; return '<tr><td style="white-space:nowrap">'+dt(r.at)+'</td><td>'+esc(r.by)+'</td><td>'+esc(nm)+'</td><td><span class="tag '+cls+'">'+esc(r.type)+'</span></td><td class="num">'+r.before+' → <b>'+r.after+'</b> <span style="color:var(--muted)">('+(r.delta>0?"+":"")+r.delta+')</span></td>'+(adm?'<td class="num">'+(r.cost!==""&&r.cost!=null?won(r.cost):"—")+'</td><td class="num">'+(r.amount!==""&&r.amount!=null?won(r.amount):"—")+'</td>':'')+'<td style="color:var(--ink2)">'+esc(r.note||"")+'</td></tr>'; }).join("")+'</tbody></table></div>';
 }
 function viewLog(){
   var q=S.q.trim().toLowerCase(); var rows=S.log; var byCode={}; S.items.forEach(function(i){byCode[i.code]=i});
@@ -353,7 +534,38 @@ function loadUsers(){
     tb.innerHTML=r.users.map(function(u){ return '<tr><td><b>'+esc(u.id)+'</b></td><td>'+esc(u.name)+'</td><td><span class="tag '+(u.role==="admin"?"admin":"")+'">'+(u.role==="admin"?"관리자":"직원")+'</span></td><td>'+esc(u.since||"")+'</td><td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-resetpw="'+esc(u.id)+'">비밀번호 재설정</button> '+(u.id!==S.user.id?'<button class="btn danger sm" data-deluser="'+esc(u.id)+'">삭제</button>':'')+'</td></tr>'; }).join(""); bind(); });
 }
 function viewMe(){
-  return '<div class="sec-h"><div><div class="eyebrow">ACCOUNT</div><h2>내 계정</h2></div></div><div class="grid2"><div class="panel"><h3>비밀번호 변경</h3><form id="pwForm"><div class="field"><label>현재 비밀번호</label><input type="password" id="pw0" autocomplete="current-password" required></div><div class="field"><label>새 비밀번호 (6자 이상)</label><input type="password" id="pw1" autocomplete="new-password" minlength="6" required></div><div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw2" autocomplete="new-password" required></div><button class="btn" type="submit">변경</button></form></div><div class="panel"><h3>로그인 정보</h3><p style="margin-bottom:6px"><b>'+esc(S.user.name||S.user.id)+'</b> ('+esc(S.user.id)+') · '+(S.user.role==="admin"?"관리자":"직원")+'</p><p class="note">세션은 12시간 뒤 자동으로 만료됩니다.</p><div style="margin-top:16px"><button class="btn ghost" id="logoutBtn">로그아웃</button></div></div></div>';
+  return '<div class="sec-h"><div><div class="eyebrow">ACCOUNT</div><h2>내 계정</h2></div></div><div class="grid2"><div class="panel"><h3>비밀번호 변경</h3><form id="pwForm"><div class="field"><label>현재 비밀번호</label><input type="password" id="pw0" autocomplete="current-password" required></div><div class="field"><label>새 비밀번호 (6자 이상)</label><input type="password" id="pw1" autocomplete="new-password" minlength="6" required></div><div class="field"><label>새 비밀번호 확인</label><input type="password" id="pw2" autocomplete="new-password" required></div><button class="btn" type="submit">변경</button></form></div><div class="panel"><h3>로그인 정보</h3><p style="margin-bottom:6px"><b>'+esc(S.user.name||S.user.id)+'</b> ('+esc(S.user.id)+') · '+(S.user.role==="admin"?"관리자":"직원")+'</p><p class="note">화면 v'+APP_VERSION+' · 서버 '+(DEMO?"데모":S.serverVer?"v"+esc(S.serverVer):"구버전(1.4 이하)")+'</p><p class="note">'+(isAdmin()?'관리자: 수입단가·판매가·원가·마진이 모두 보입니다. 직원 계정은 서버에서 금액 정보를 걸러 도매가만 받습니다.':'직원 계정: 금액은 도매가만 표시됩니다. 수입단가·판매가·원가는 관리자만 볼 수 있습니다.')+'</p><p class="note">"로그인 상태 유지"로 들어오면 이 기기에서 30일, 아니면 12시간 뒤 자동 만료됩니다. 비밀번호를 바꾸면 다른 기기의 로그인은 모두 풀립니다.</p><div style="margin-top:16px"><button class="btn ghost" id="logoutBtn">로그아웃</button></div></div></div>';
+}
+
+/* ============================ 원가 · 설정 (관리자) ============================ */
+function viewCost(){
+  var st=S.settings||{rate:200,extraPct:0,wholesalePct:60}, ps=products(), partsAll=S.parts.slice();
+  var q=S.q.trim().toLowerCase();
+  var missing=partsAll.filter(function(p){return !partCny(p.code)}).length;
+  var head='<div class="sec-h"><div><div class="eyebrow">COST · SETTINGS</div><h2>원가 · 설정</h2></div><div class="tools"><span class="note">관리자에게만 보이는 화면입니다. 직원 계정에는 도매가만 전송됩니다.</span></div></div>';
+  var setPanel='<div class="panel" style="margin-bottom:14px"><h3>환율 · 비용 · 도매가율 <span>수입단가(원) = CNY × 환율 × (1 + 부대비용률)</span></h3><form id="setForm" class="setform">'
+   +'<div class="field"><label>환율 (원 / 1 CNY)</label><input id="sRate" type="number" step="0.1" min="0" value="'+esc(st.rate)+'"></div>'
+   +'<div class="field"><label>부대비용률 (%) — 운송·관세 등</label><input id="sExtra" type="number" step="0.1" min="0" value="'+esc(st.extraPct)+'"></div>'
+   +'<div class="field"><label>도매가율 (%) — 도매가 미지정 제품: 판매가 × 비율</label><input id="sWs" type="number" step="1" min="0" max="100" value="'+esc(st.wholesalePct)+'"></div>'
+   +'<div class="field" style="grid-column:1/-1;display:flex;gap:10px;align-items:center"><button class="btn accent" type="submit">저장</button><span class="note">예) 100 CNY → '+won(cnyKrw(100))+' · 구글 시트 "설정" 탭과 같은 값입니다.</span></div></form></div>';
+  // 제품별 원가
+  var prodRows=ps.map(function(p){ var bc=bomCost(p.no); return '<tr'+(bc.missing.length?' class="nocost"':'')+'><td><span class="pn">No'+p.no+'<button class="bomb" data-bom="'+p.no+'">BOM</button></span><span class="ps">'+esc(p.name)+' · '+esc(p.spec)+'</span></td>'
+     +'<td class="num">'+(bc.cny?fmtCny(bc.cny):"—")+(bc.missing.length?'<br><small style="color:var(--bad)">미입력 '+bc.missing.length+'종</small>':'')+'</td><td class="num"><b>'+(bc.krw?won(bc.krw):"—")+'</b></td>'
+     +'<td class="num">'+(p.price?won(p.price):"—")+'</td><td class="num">'+mgTag(p.price,bc.krw)+'</td>'
+     +'<td class="num"><span class="inl"><input type="number" step="1000" min="0" data-wsno="'+p.no+'" value="'+(p.wholesale!=null&&!p.wholesaleAuto?esc(p.wholesale):"")+'" placeholder="'+(p.wholesaleAuto?"자동 "+fmt(p.wholesale):"미지정")+'"><button class="btn ghost sm" data-wssave="'+p.no+'">저장</button></span></td><td class="num">'+mgTag(p.wholesale,bc.krw)+'</td>'
+     +'<td class="num">'+fmt(p.total)+'</td><td class="num">'+(bc.krw?won(bc.krw*p.total):"—")+'</td></tr>'; }).join("");
+  var totCost=ps.reduce(function(a,p){return a+bomCost(p.no).krw*p.total},0), totSale=ps.reduce(function(a,p){return a+(p.price||0)*p.total},0), totWs=ps.reduce(function(a,p){return a+(p.wholesale||0)*p.total},0);
+  var prodPanel='<div class="panel" style="margin-bottom:14px"><h3>제품별 원가 · 마진 <span>BOM 1대 기준 · 도매가는 비우면 판매가 × 도매가율(천원 반올림)</span></h3><div class="tablewrap"><table class="t"><thead><tr><th>제품</th><th class="num">BOM 원가 (CNY)</th><th class="num">수입원가 (원)</th><th class="num">판매가</th><th class="num">마진</th><th class="num">도매가 (직접 지정)</th><th class="num">도매 마진</th><th class="num">재고</th><th class="num">재고 원가액</th></tr></thead><tbody>'+prodRows
+   +'<tr class="total"><td>합계</td><td></td><td></td><td class="num">'+won(totSale)+'</td><td class="num">'+mgTag(totSale,totCost)+'</td><td class="num">'+won(totWs)+'</td><td class="num">'+mgTag(totWs,totCost)+'</td><td class="num">'+fmt(ps.reduce(function(a,p){return a+p.total},0))+'</td><td class="num"><b>'+won(totCost)+'</b></td></tr></tbody></table></div>'
+   +'<p class="note">마진 = (가격 − 원가) ÷ 가격. 초록 30% 이상, 빨강 15% 미만. 원가에는 중국 출고단가와 환율·부대비용률만 반영되고 국내 물류·포장·판매 수수료는 포함되지 않습니다.</p></div>';
+  // 부품 단가표
+  var parts=partsAll; if(q) parts=parts.filter(function(p){return (p.code+" "+p.name+" "+p.spec+" "+p.cat+" "+(S.costNotes[p.code]||"")).toLowerCase().indexOf(q)>=0});
+  var partRows=parts.map(function(p){ var c=partCny(p.code); return '<tr'+(c?'':' class="nocost"')+'><td><span class="tag">'+esc(p.cat)+'</span></td><td><span class="pn">'+esc(p.name)+'</span><span class="ps">'+esc(p.spec)+' · '+esc(p.code)+(p.colored?'':' · 공통')+'</span></td>'
+     +'<td class="num"><span class="inl">¥<input type="number" step="0.1" min="0" data-pcno="'+esc(p.code)+'" value="'+(c?esc(c):"")+'" placeholder="0.0"><button class="btn ghost sm" data-pcsave="'+esc(p.code)+'">저장</button></span></td><td class="num">'+(c?won(cnyKrw(c)):"—")+'</td><td style="color:var(--muted);font-size:12px">'+esc(S.costNotes[p.code]||"")+'</td></tr>'; }).join("");
+  var partPanel='<div class="panel"><div class="pmhead"><h3>부품 단가표 <span>중국 출고단가 (CNY, 1개 기준)'+(missing?' · <span style="color:var(--bad)">미입력 '+missing+'종</span>':'')+'</span></h3><input id="fgq" placeholder="검색 (부품, 규격, 메모)" value="'+esc(S.q)+'" style="max-width:260px"></div>'
+   +'<div class="tablewrap"><table class="t"><thead><tr><th>분류</th><th>부품</th><th class="num">CNY 단가</th><th class="num">원화 환산</th><th>견적 메모</th></tr></thead><tbody>'+(partRows||'<tr><td colspan="5"><div class="empty">검색 결과 없음</div></td></tr>')+'</tbody></table></div>'
+   +'<p class="note">견적서(模块配件报价)의 단가를 넣어 두었습니다. 힌지는 1개 단가(도어 1개 = 힌지 2개 = ¥118), 확장 슬리브(膨胀管)는 튜브 1개당 2개로 BOM에 넣었습니다. 값은 구글 시트 "부품단가" 탭에도 같이 저장됩니다.</p></div>';
+  return head+setPanel+prodPanel+partPanel;
 }
 
 /* ============================ 이벤트 ============================ */
@@ -363,12 +575,21 @@ function bind(){
   $$("[data-view]").forEach(function(b){ b.onclick=function(){ S.fgView=b.dataset.view; render(); }; });
   var q=$("#fgq"); if(q){ q.oninput=function(){ S.q=q.value; var pos=q.selectionStart; render(); var q2=$("#fgq"); q2.focus(); q2.setSelectionRange(pos,pos); }; }
   var a=$("#addItemBtn"); if(a) a.onclick=function(){ openItem(null); };
+  var sb=$("#seedBomBtn"); if(sb) sb.onclick=function(){ if(!confirm("BOM에 나오는 부품을 색상별로 품목에 등록합니다 (이미 있는 코드는 건너뜀, 수량 0). 진행할까요?")) return; sb.disabled=true; api({action:"seedBomParts"}).then(function(r){ sb.disabled=false; if(r.ok){ toast(r.added+"개 부품을 등록했습니다"); load(); } else toast(r.message||"실패",true); }); };
+  $$("[data-pmode]").forEach(function(b){ b.onclick=function(){ S.pmode=b.dataset.pmode; render(); }; });
+  $$("[data-pcat]").forEach(function(b){ b.onclick=function(){ S.pcat=(S.pcat===b.dataset.pcat&&b.classList.contains("kpi"))?"전체":b.dataset.pcat; render(); }; });
+  $$("[data-part]").forEach(function(b){ b.onclick=function(){ openPartDetail(b.dataset.part,b.dataset.pcolor); }; });
+  $$("[data-bom]").forEach(function(b){ b.onclick=function(e){ e.stopPropagation(); openBom(Number(b.dataset.bom)); }; });
   var u=$("#addUserBtn"); if(u) u.onclick=openAddUser;
   $$("[data-resetpw]").forEach(function(b){ b.onclick=function(){ openResetPw(b.dataset.resetpw); }; });
   $$("[data-deluser]").forEach(function(b){ b.onclick=function(){ if(confirm(b.dataset.deluser+" 계정을 삭제할까요?")) api({action:"removeUser",id:b.dataset.deluser}).then(function(r){ if(r.ok){toast("삭제했습니다");loadUsers();} else toast(r.message||"실패",true); }); }; });
   var lo=$("#logoutBtn"); if(lo) lo.onclick=logout;
   var pf=$("#pwForm"); if(pf) pf.onsubmit=function(e){ e.preventDefault(); if($("#pw1").value!==$("#pw2").value){toast("새 비밀번호가 서로 다릅니다",true);return;} api({action:"changePw",oldPw:$("#pw0").value,newPw:$("#pw1").value}).then(function(r){ if(r.ok){toast("비밀번호를 변경했습니다");pf.reset();} else toast(r.message||"실패",true); }); };
   var csv=$("#csvBtn"); if(csv) csv.onclick=exportCsv;
+  var sf=$("#setForm"); if(sf) sf.onsubmit=function(e){ e.preventDefault(); api({action:"setSettings",rate:$("#sRate").value,extraPct:$("#sExtra").value,wholesalePct:$("#sWs").value}).then(function(r){ if(!r.ok){toast(r.message||"저장 실패",true);return;} toast("설정을 저장했습니다"); load(); }); };
+  $$("[data-pcsave]").forEach(function(b){ b.onclick=function(){ var inp=$('[data-pcno="'+b.dataset.pcsave+'"]'); var v=inp?inp.value:""; if(v===""||isNaN(Number(v))){toast("단가를 입력하세요",true);return;} b.disabled=true; api({action:"setPartCost",code:b.dataset.pcsave,cny:Number(v)}).then(function(r){ b.disabled=false; if(!r.ok){toast(r.message||"저장 실패",true);return;} toast(b.dataset.pcsave+" 단가 저장"); load(); }); }; });
+  $$("[data-wssave]").forEach(function(b){ b.onclick=function(){ var inp=$('[data-wsno="'+b.dataset.wssave+'"]'); var v=inp?inp.value:""; if(v!==""&&isNaN(Number(v))){toast("금액을 확인하세요",true);return;} b.disabled=true; api({action:"setWholesale",no:Number(b.dataset.wssave),wholesale:v===""?"":Number(v)}).then(function(r){ b.disabled=false; if(!r.ok){toast(r.message||"저장 실패",true);return;} toast("No"+b.dataset.wssave+" 도매가 "+(v===""?"자동 계산으로 되돌림":"저장")); load(); }); }; });
+  $$("[data-pcno],[data-wsno]").forEach(function(i){ i.onkeydown=function(e){ if(e.key==="Enter"){ e.preventDefault(); var nb=i.parentNode.querySelector("button"); if(nb) nb.click(); } }; });
 }
 function modal(html){ var ov=document.createElement("div"); ov.className="ov"; ov.innerHTML='<div class="md">'+html+'</div>'; ov.addEventListener("click",function(e){ if(e.target===ov) ov.remove(); }); document.body.appendChild(ov); var f=ov.querySelector("input,select"); if(f) setTimeout(function(){f.focus()},30); return ov; }
 function openMove(code){
@@ -376,42 +597,85 @@ function openMove(code){
   var title=it.kind==="완제품"?"No"+it.no+" · "+it.color:it.name+(it.color?" · "+it.color:"");
   var ov=modal('<h3>입고 · 출고 기록</h3><div class="sub">'+esc(title)+' <span style="color:#c9c3b8">·</span> '+esc(it.code)+'</div>'
   +'<div class="cur">'+(it.kind==="완제품"?'<div class="im"><img src="'+IMG(it.no)+'" alt="" onerror="this.style.display=\'none\'"></div>':'')+'<div>현재 재고<br><b>'+it.qty+'</b> '+esc(it.unit)+'</div><div style="margin-left:auto;text-align:right;font-size:12px;color:var(--muted)">'+esc(it.kind==="완제품"?it.name.replace(/^No\d+\s*/,""):it.spec||"")+'<br>'+esc(it.spec&&it.kind==="완제품"?it.spec:"")+'</div></div>'
-  +'<div class="field"><label>유형</label><div class="seg" id="mtype" style="display:flex"><button type="button" data-t="입고" class="on" style="flex:1">입고 (+)</button><button type="button" data-t="출고" style="flex:1">출고 (−)</button><button type="button" data-t="조정" style="flex:1">조정 (=)</button></div></div>'
+  +'<div class="field"><label>유형</label><div class="seg" id="mtype" style="display:flex;--pad:6px"><button type="button" data-t="입고" class="on" style="flex:1">입고 (+)</button><button type="button" data-t="출고" style="flex:1">출고 (−)</button><button type="button" data-t="조정" style="flex:1">조정 (=)</button>'+(it.kind==="완제품"?'<button type="button" data-t="조립" style="flex:1" title="부품 재고로 완제품을 조립 (BOM 부품 차감)">조립</button><button type="button" data-t="분해" style="flex:1" title="완제품을 분해해 BOM 부품으로 옮김">분해</button>':'')+'</div></div><div id="bomPreview" class="hidden" style="margin:-4px 0 12px"></div>'
   +'<div class="field"><label id="qlabel">입고 수량</label><div class="qtybox"><button type="button" id="qm">−</button><input id="mq" type="number" min="0" step="1" value="1" inputmode="numeric"><button type="button" id="qp">+</button></div></div>'
-  +'<div class="field" id="costF"><label>수입 단가 (원, 선택)</label><input id="mcost" type="number" min="0" step="1000" placeholder="'+(it.cost?fmt(it.cost):"입고 단가")+'" inputmode="numeric"></div>'
+  +(isAdmin()?'<div class="field" id="costF"><label>수입 단가 (원, 선택 · 비우면 BOM 원가로 계산)</label><input id="mcost" type="number" min="0" step="1000" placeholder="'+(it.cost?fmt(it.cost):(function(){var u=itemUnitCost(it);return u?"BOM 원가 "+fmt(u):"입고 단가"})())+'" inputmode="numeric"></div>':'<div id="costF" class="hidden"><input id="mcost" type="hidden" value=""></div>')
   +'<div class="field"><label>메모 (선택)</label><input id="mnote" placeholder="예: 10/2 컨테이너 입고, 김OO 고객 출고"></div>'
   +'<div class="err" id="merr"></div><div class="foot"><button class="btn ghost" type="button" id="mcancel">취소</button><button class="btn accent" type="button" id="msave">저장</button></div>');
   var type="입고";
-  $$("#mtype button",ov).forEach(function(b){ b.onclick=function(){ type=b.dataset.t; $$("#mtype button",ov).forEach(function(x){x.classList.toggle("on",x===b)}); $("#qlabel",ov).textContent=type==="조정"?"최종 수량":type+" 수량"; $("#costF",ov).style.display=type==="입고"?"":"none"; if(type==="조정") $("#mq",ov).value=it.qty; else $("#mq",ov).value=1; }; });
-  $("#qm",ov).onclick=function(){ var i=$("#mq",ov); i.value=Math.max(0,(parseInt(i.value,10)||0)-1); };
-  $("#qp",ov).onclick=function(){ var i=$("#mq",ov); i.value=(parseInt(i.value,10)||0)+1; };
+  function bomPreview(){ var box=$("#bomPreview",ov); if(type!=="분해"&&type!=="조립"){ box.classList.add("hidden"); return; } var n=parseInt($("#mq",ov).value,10)||0, b=S.bom[it.no]||S.bom[String(it.no)]||{}; var st=type==="조립"?partStock():null, shortN=0;
+    var li=S.parts.filter(function(p){return b[p.code]}).map(function(p){ var need=b[p.code]*n, have=null; if(st){ var r=st.rows.filter(function(x){return x.part.code===p.code})[0]; var x=r?(p.colored?r.cols[it.color]:r.common):null; have=x?x.have:0; if(have<need) shortN++; }
+      return '<div>'+esc(p.name)+' <span class="s">'+esc(p.spec)+(p.colored?' · '+esc(it.color):'')+(st?' · 보유 '+fmt(have):'')+'</span></div><div class="q"'+(st&&have<need?' style="color:var(--bad)"':'')+'>'+fmt(need)+'</div>'; }).join("");
+    box.innerHTML='<div class="cur" style="display:block;margin:0"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">'+(type==="조립"?n+'대 조립 시 부품 재고에서 빠지는 수량 (BOM × '+n+')'+(shortN?' — <span style="color:var(--bad)">부족 '+shortN+'종</span>':''):n+'대 분해 시 부품 재고로 들어가는 수량 (BOM × '+n+')')+'</div><div class="bomlist" style="font-size:12.5px">'+(li||'<div class="empty">BOM 없음</div>')+'</div></div>'; box.classList.remove("hidden"); }
+  $$("#mtype button",ov).forEach(function(b){ b.onclick=function(){ type=b.dataset.t; $$("#mtype button",ov).forEach(function(x){x.classList.toggle("on",x===b)}); $("#qlabel",ov).textContent=type==="조정"?"최종 수량":type+" 수량"; $("#costF",ov).style.display=type==="입고"?"":"none"; if(type==="조정") $("#mq",ov).value=it.qty; else $("#mq",ov).value=1; bomPreview(); }; });
+  $("#mq",ov).oninput=bomPreview;
+  $$("#mtype button",ov)[1].click();   // 기본 유형 = 출고 (입고를 기본으로 하려면 이 줄 삭제)
+  $("#qm",ov).onclick=function(){ var i=$("#mq",ov); i.value=Math.max(0,(parseInt(i.value,10)||0)-1); bomPreview(); };
+  $("#qp",ov).onclick=function(){ var i=$("#mq",ov); i.value=(parseInt(i.value,10)||0)+1; bomPreview(); };
   $("#mcancel",ov).onclick=function(){ov.remove()};
   $("#msave",ov).onclick=function(){
     var q=parseInt($("#mq",ov).value,10); if(isNaN(q)||q<0){ $("#merr",ov).textContent="수량을 확인하세요"; return; }
     if(type!=="조정"&&q===0){ $("#merr",ov).textContent="수량은 1 이상"; return; }
     var cost=$("#mcost",ov).value; $("#msave",ov).disabled=true;
+    if(type==="분해"||type==="조립"){
+      var asm=type==="조립";
+      api({action:asm?"assemble":"disassemble",code:code,qty:q,note:$("#mnote",ov).value}).then(function(r){
+        if(!r.ok){ $("#msave",ov).disabled=false; $("#merr",ov).textContent=r.message||(type+" 실패"); return; }
+        ov.remove(); toast(asm?title+" "+q+"대 조립 ← 부품 "+r.parts+"종 출고 (재고 "+r.qty+"대)":title+" "+q+"대 분해 → 부품 "+r.parts+"종 입고 (남은 재고 "+r.qty+"대)"); load();
+      }); return;
+    }
     api({action:"move",code:code,type:type,qty:q,cost:type==="입고"&&cost!==""?Number(cost):"",note:$("#mnote",ov).value}).then(function(r){
       if(!r.ok){ $("#msave",ov).disabled=false; $("#merr",ov).textContent=r.message||"저장 실패"; return; }
       ov.remove(); toast(title+" → "+r.qty+it.unit+" 저장됨"); load();
     });
   };
 }
+function openBom(no){
+  var ps=products(), prod=null; ps.forEach(function(p){ if(p.no===no) prod=p; });
+  var b=S.bom[no]||S.bom[String(no)]||{}, byCode={}; S.parts.forEach(function(p){byCode[p.code]=p});
+  var codes=S.parts.map(function(p){return p.code}).filter(function(c){return b[c]});
+  var colored=codes.filter(function(c){return byCode[c].colored}), common=codes.filter(function(c){return !byCode[c].colored});
+  var bc=hasCost()?bomCost(no):null;
+  function li(c){ var p=byCode[c]; var cn=bc?partCny(c):0; return '<div>'+esc(p.name)+' <span class="s">'+esc(p.spec)+'</span>'+(bc?'<br><span class="s">'+(cn?fmtCny(cn)+' × '+fmt(b[c])+' = '+fmtCny(cn*b[c])+' · '+won(cnyKrw(cn*b[c])):'<span style="color:var(--bad)">단가 미입력</span>')+'</span>':'')+'</div><div class="q">'+fmt(b[c])+'</div>'; }
+  var stockLine=prod?S.colors.filter(function(c){return prod.cols[c]&&prod.cols[c].qty>0}).map(function(c){return '<span class="sw" style="--c:'+COLOR_HEX[c]+'"></span>'+esc(c)+' '+prod.cols[c].qty}).join(' &nbsp; '):'';
+  modal('<h3>No'+no+' BOM <span style="font-weight:400;color:var(--muted);font-size:13px">1대당 부품 구성</span></h3><div class="sub">'+esc(prod?prod.name+' · '+prod.spec:"")+'</div>'
+  +'<div class="cur"><div class="im"><img src="'+IMG(no)+'" alt="" onerror="this.style.display=\'none\'"></div><div style="font-size:12.5px">현재 재고 <b style="font-size:16px">'+(prod?prod.total:0)+'</b>대<br><span style="color:var(--muted)">'+(stockLine||"재고 없음")+'</span></div></div>'
+  +'<div class="bomlist">'+(colored.length?'<div class="h">색상 부품 (제품 색상)</div>'+colored.map(li).join(""):'')+(common.length?'<div class="h">공통 부품 (크롬 · 유리 · 조명)</div>'+common.map(li).join(""):'')+(codes.length?'':'<div class="empty">BOM이 등록되지 않았습니다. 구글 시트 BOM 탭에 추가하세요.</div>')+'</div>'
+  +(bc&&codes.length?'<div class="cur" style="display:block;margin:14px 0 0"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span>1대 원가 <b style="font-size:16px">'+fmtCny(bc.cny)+'</b> → <b style="font-size:16px">'+won(bc.krw)+'</b> <span class="s" style="color:var(--muted)">(환율 '+fmt(S.settings.rate)+'원'+(S.settings.extraPct?' · 부대비용 +'+S.settings.extraPct+'%':'')+')</span></span></div><div style="margin-top:6px;font-size:12.5px;color:var(--ink2)">판매가 '+(prod&&prod.price?won(prod.price)+' · 마진 '+mgTag(prod.price,bc.krw):"—")+' &nbsp;|&nbsp; 도매가 '+(prod&&prod.wholesale?won(prod.wholesale)+' · 마진 '+mgTag(prod.wholesale,bc.krw):"—")+'</div>'+(bc.missing.length?'<div style="margin-top:6px;font-size:12px;color:var(--bad)">단가 미입력 부품 '+bc.missing.length+'종 — 원가 · 설정 탭에서 입력하세요</div>':'')+'</div>':'')
+  +(!isAdmin()&&prod&&prod.wholesale?'<div class="cur" style="margin:14px 0 0">도매가 <b style="font-size:16px">'+won(prod.wholesale)+'</b></div>':'')
+  +'<div class="foot" style="margin-top:16px"><button class="btn ghost" type="button" onclick="this.closest(\'.ov\').remove()">닫기</button></div>');
+}
+function openPartDetail(code,color){
+  var st=partStock(), row=null; st.rows.forEach(function(r){ if(r.part.code===code) row=r; }); if(!row) return;
+  var p=row.part, x=p.colored?row.cols[color]:row.common; if(!x) return;
+  var title=esc(p.name)+' '+esc(p.spec)+(p.colored?' · '+esc(color):' · 공통');
+  var from=x.from.slice().sort(function(a,b){return b.stock*b.per-a.stock*a.per});
+  var admin=S.user.role==="admin";
+  var ov=modal('<h3>'+title+'</h3><div class="sub">'+esc(p.code)+' · 합계 <b>'+fmt(x.total)+'</b>개 = BOM 환산 '+fmt(x.bom)+' + 부품 보유 '+fmt(x.have)+(hasCost()?' · 단가 '+(partCny(p.code)?fmtCny(partCny(p.code))+' = '+won(partKrw(p.code))+' · 보유분 원가 '+won(partKrw(p.code)*x.have):'<span style="color:var(--bad)">미입력</span>'):'')+'</div>'
+  +'<div class="bomlist"><div class="h">완제품 BOM 환산 — '+fmt(x.bom)+'개</div>'+(from.length?from.map(function(f){ return '<div>No'+f.no+' <span class="s">'+esc(f.name)+(f.color?' · '+esc(f.color):'')+'</span><br><span class="s">재고 '+f.stock+'대 × '+f.per+'개</span></div><div class="q">'+fmt(f.stock*f.per)+'</div>'; }).join(""):'<div class="empty">이 부품이 들어가는 완제품 재고가 없습니다.</div>')
+  +'<div class="h">부품 보유 — '+fmt(x.have)+'개</div>'+(x.items.length?x.items.map(function(it){ return '<div>'+esc(it.name)+' <span class="s">'+esc(it.code)+'</span></div><div class="q"><button class="btn ghost sm" data-move="'+esc(it.code)+'">'+fmt(it.qty)+' 입출고</button></div>'; }).join(""):'<div class="empty" style="grid-column:1/-1">등록된 부품 품목이 없습니다.'+(admin?' 부품 탭의 "BOM 부품 일괄 등록" 또는 "부품 등록"으로 추가하세요.':'')+'</div>')+'</div>'
+  +'<div class="foot" style="margin-top:16px"><button class="btn ghost" type="button" onclick="this.closest(\'.ov\').remove()">닫기</button></div>');
+  $$("[data-move]",ov).forEach(function(b){ b.onclick=function(){ ov.remove(); openMove(b.dataset.move); }; });
+}
 function openItem(code){
   var it=code?S.items.find(function(i){return i.code===code}):null;
   var ov=modal('<h3>'+(it?"품목 수정":"부품 등록")+'</h3><div class="sub">'+(it?"코드는 바꿀 수 없습니다. 수량은 입출고로만 바뀝니다.":"재고를 셀 최소 단위로 등록하세요. 색상이 다르면 별도 품목입니다.")+'</div>'
-  +'<div class="field"><label>코드</label><input id="icode" value="'+esc(it?it.code:"PT-")+'" '+(it?"readonly":"")+' placeholder="PT-DOOR750-WH"></div>'
+  +(it?'':'<div class="field"><label>BOM 부품에서 선택 (선택하면 코드·이름·규격 자동 입력)</label><select id="ipart"><option value="">— 직접 입력</option>'+S.parts.map(function(p){return '<option value="'+esc(p.code)+'">'+esc('['+p.cat+'] '+p.name+' '+p.spec)+(p.colored?'':' (공통)')+'</option>'}).join("")+'</select></div>')
+  +'<div class="field"><label>코드</label><input id="icode" value="'+esc(it?it.code:"PT-")+'" '+(it?"readonly":"")+' placeholder="PT-DOOR-750x350-WH"></div>'
   +'<div class="row"><div class="field"><label>구분</label><select id="ikind"><option value="부품"'+(!it||it.kind==="부품"?" selected":"")+'>부품</option><option value="완제품"'+(it&&it.kind==="완제품"?" selected":"")+'>완제품</option></select></div><div class="field"><label>제품번호 (완제품만)</label><input id="ino" type="number" value="'+esc(it&&it.no!=null?it.no:"")+'"></div></div>'
   +'<div class="field"><label>품목명</label><input id="iname" value="'+esc(it?it.name:"")+'" placeholder="예: 도어 750 (드롭다운)"></div>'
   +'<div class="row"><div class="field"><label>색상</label><select id="icolor"><option value="">— 없음</option>'+S.colors.map(function(c){return '<option'+(it&&it.color===c?" selected":"")+'>'+esc(c)+'</option>'}).join("")+'</select></div><div class="field"><label>단위</label><input id="iunit" value="'+esc(it?it.unit:"개")+'"></div></div>'
   +'<div class="field"><label>규격</label><input id="ispec" value="'+esc(it?it.spec:"")+'" placeholder="예: 750×350"></div>'
-  +'<div class="row"><div class="field"><label>수입단가 (원)</label><input id="icost" type="number" value="'+esc(it&&it.cost!=null?it.cost:"")+'"></div><div class="field"><label>판매가 (원)</label><input id="iprice" type="number" value="'+esc(it&&it.price!=null?it.price:"")+'"></div></div>'
+  +'<div class="row"><div class="field"><label>수입단가 (원 · 비우면 BOM 원가)</label><input id="icost" type="number" value="'+esc(it&&it.cost!=null?it.cost:"")+'"></div><div class="field"><label>판매가 (원)</label><input id="iprice" type="number" value="'+esc(it&&it.price!=null?it.price:"")+'"></div></div>'
+  +'<div class="field"><label>도매가 (원 · 완제품, 비우면 설정의 도매가율로 자동)</label><input id="iws" type="number" value="'+esc(it&&it.wholesale!=null&&!it.wholesaleAuto?it.wholesale:"")+'" placeholder="'+esc(it&&it.wholesaleAuto?"자동 "+fmt(it.wholesale):"")+'"></div>'
   +(it?'':'<div class="field"><label>초기 수량</label><input id="iqty" type="number" value="0"></div>')
   +'<div class="field"><label>비고</label><input id="imemo" value="'+esc(it?it.memo:"")+'"></div>'
   +(it?'<div class="field"><label><input type="checkbox" id="iactive" '+(it.active?"checked":"")+'> 사용 중 (해제하면 목록에서 숨김)</label></div>':'')
   +'<div class="err" id="ierr"></div><div class="foot"><button class="btn ghost" type="button" id="icancel">취소</button><button class="btn accent" type="button" id="isave">저장</button></div>');
   $("#icancel",ov).onclick=function(){ov.remove()};
+  var sel=$("#ipart",ov); if(sel){ var fill=function(){ var p=S.parts.filter(function(x){return x.code===sel.value})[0]; if(!p) return; var c=$("#icolor",ov).value; if(!p.colored){ $("#icolor",ov).value=""; c=""; } $("#icode",ov).value="PT-"+p.code+(p.colored&&c?"-"+COLOR_CODE[c]:""); $("#iname",ov).value=p.name; $("#ispec",ov).value=p.spec; $("#ikind",ov).value="부품"; }; sel.onchange=fill; $("#icolor",ov).onchange=function(){ if(sel.value) fill(); }; }
   $("#isave",ov).onclick=function(){
-    var d={code:$("#icode",ov).value.trim(),kind:$("#ikind",ov).value,no:$("#ino",ov).value,name:$("#iname",ov).value.trim(),color:$("#icolor",ov).value,unit:$("#iunit",ov).value||"개",spec:$("#ispec",ov).value,cost:$("#icost",ov).value,price:$("#iprice",ov).value,memo:$("#imemo",ov).value,active:it?$("#iactive",ov).checked:true};
+    var d={code:$("#icode",ov).value.trim(),kind:$("#ikind",ov).value,no:$("#ino",ov).value,name:$("#iname",ov).value.trim(),color:$("#icolor",ov).value,unit:$("#iunit",ov).value||"개",spec:$("#ispec",ov).value,cost:$("#icost",ov).value,price:$("#iprice",ov).value,wholesale:$("#iws",ov).value,memo:$("#imemo",ov).value,active:it?$("#iactive",ov).checked:true};
     if(!it) d.qty=$("#iqty",ov).value;
     if(!d.code||!d.name){ $("#ierr",ov).textContent="코드와 품목명은 필수입니다"; return; }
     $("#isave",ov).disabled=true;
@@ -430,15 +694,20 @@ function openResetPw(id){
 }
 function exportCsv(){
   var byCode={}; S.items.forEach(function(i){byCode[i.code]=i});
-  var lines=[["일시","담당","코드","품목","색상","유형","변경전","변경후","증감","단가","금액","메모"]].concat(S.log.map(function(r){ var it=byCode[r.code]||{}; return [dt(r.at),r.by,r.code,it.name||"",it.color||"",r.type,r.before,r.after,r.delta,r.cost,r.amount,r.note||""]; }));
+  var adm=isAdmin();
+  var lines=[["일시","담당","코드","품목","색상","유형","변경전","변경후","증감"].concat(adm?["단가","금액"]:[]).concat(["메모"])].concat(S.log.map(function(r){ var it=byCode[r.code]||{}; return [dt(r.at),r.by,r.code,it.name||"",it.color||"",r.type,r.before,r.after,r.delta].concat(adm?[r.cost,r.amount]:[]).concat([r.note||""]); }));
   var csv="﻿"+lines.map(function(l){return l.map(function(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}).join(",")}).join("\n");
-  var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="4INCUBE_inventory_log_"+new Date().toISOString().slice(0,10)+".csv"; a.click();
+  var a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"})); a.download="4incube_stock_log_"+new Date().toISOString().slice(0,10)+".csv"; a.click();
 }
 
 /* ============================ 시작 ============================ */
 (function init(){
   if(DEMO) $("#demoNote").classList.remove("hidden");
-  try{ var t=sessionStorage.getItem("pf_tok"), u=sessionStorage.getItem("pf_user"); if(t&&u){ S.token=t; S.user=JSON.parse(u); enterApp(); } }catch(x){}
+  try{
+    var last=localStorage.getItem("pf_last_id"); if(last){ $("#lid").value=last; $("#lpw").focus(); }
+    var t=localStorage.getItem("pf_tok")||sessionStorage.getItem("pf_tok"), u=localStorage.getItem("pf_user")||sessionStorage.getItem("pf_user");
+    if(t&&u){ S.token=t; S.user=JSON.parse(u); enterApp(); }
+  }catch(x){}
 })();
 </script>
 </body>
